@@ -4,8 +4,11 @@ file11="$NCARG_ROOT/lib/ncarg/data/cdf/landsea.nc"
 dir1="/work/uo1451/m301158/MPI-ESM/data/"
 dir2="/work/uo1451/m301158/MPI-ESM/image/"
 
+f=addfile(dir1+"","r")
+
+
  plot=new(9,graphic)
- wks=gsn_open_wks("x11",dir1+"DIFF_corr_COBALT_Temp_1991-2017_leadtime_"+l(i))
+ wks=gsn_open_wks("x11",dir2+"clim_map")
  res                        =   True
  res@gsnFrame               =       False
  res@gsnDraw                =       False
