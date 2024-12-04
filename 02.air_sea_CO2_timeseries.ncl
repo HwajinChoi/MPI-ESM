@@ -36,35 +36,42 @@ tas!0="scenario"
 tas!1="year"
 tas&year=year
 ;--------------------------------------------------------------------------------------------------
-f3=addfile(dir1+"esm-flat10/fgco2_area_sum_Omon_MPI-ESM1-2-LR_esm-flat10_r1i1p1f1_gn_185001-215012.nc","r")
+f3=addfile(dir1+"esm-flat10/fgco2_fldsum_units_Omon_MPI-ESM1-2-LR_esm-flat10_r1i1p1f1_gn_185001-215012.nc","r")
 flat10_fgco2=f3->fgco2(:,0,0)
-fl10_fgco2_annual=month_to_annual(flat10_fgco2,1)
 
-g3=addfile(dir1+"esm-zec/fgco2_area_sum_Omon_MPI-ESM1-2-LR_esm-flat10_zec_r1i1p1f1_gn_195001-216912.nc","r")
+g3=addfile(dir1+"esm-zec/fgco2_fldsum_units_Omon_MPI-ESM1-2-LR_esm-flat10_zec_r1i1p1f1_gn_195001-216912.nc","r")
 zec_fgco2=g3->fgco2(:,0,0)
-zec_fgco2_annual=month_to_annual(zec_fgco2,1)
 fgco2=new((/2,320/),"float")
 fgco2@_FillValue = -999
-fgco2(0,0:300)=fl10_fgco2_annual
-fgco2(1,100:319)=zec_fgco2_annual
+fgco2(0,0:300)=flat10_fgco2
+fgco2(1,100:319)=zec_fgco2
 fgco2!0="scenario"
 fgco2!1="year"
 fgco2&year=year
-;fgco2 :=fgco2*((365.25*86400*362*(10)^12)/(10^15))
-printMinMax(fgco2,1)
-fgco2 :=fgco2*((365.25*86400)/(10^15))
-printMinMax(fgco2,1)
-exit
+;--------------------------------------------------------------------------------------------------
+f4=addfile(dir1+"esm-flat10/nbp_fldsum_units_Lmon_MPI-ESM1-2-LR_esm-flat10_r1i1p1f1_gn_185001-215012.nc","r")
+flat10_nbp=f4->nbp(:,0,0)
 
-wks=gsn_open_wks("x11",dir2+"Atm_CO2_conc_timeseries_1850-2169")
+g4=addfile(dir1+"esm-zec/nbp_fldsum_units_Lmon_MPI-ESM1-2-LR_esm-flat10_zec_r1i1p1f1_gn_195001-216912.nc","r")
+zec_nbp=g4->nbp(:,0,0)
+nbp=new((/2,320/),"float")
+nbp@_FillValue = -999
+nbp(0,0:300)=flat10_nbp
+nbp(1,100:319)=zec_nbp
+nbp!0="scenario"
+nbp!1="year"
+nbp&year=year
+
+;printMinMax(fgco2,1)
+;printMinMax(nbp,1)
+;exit
+
+wks=gsn_open_wks("png",dir2+"Atm_CO2_tas_co2_fluxes_conc_timeseries_0-320")
  plot=new(4,graphic)
  res                =   True
  res@gsnMaximize    =   True
  res@gsnPaperOrientation =       "portrait"
-; res@gsnYRefLine         =       0
-; res@gsnYRefLineThicknessF       =       3.0
-; res@gsnYRefLineDashPattern      =       2
- res@vpWidthF       = 0.8            ; Change the aspect ratio, but 
+ res@vpWidthF       = 0.6            ; Change the aspect ratio, but 
  res@vpHeightF      = 0.4            ; make plot as large as possible.
  res@gsnFrame            =       False
  res@gsnDraw             =       False
@@ -75,7 +82,7 @@ wks=gsn_open_wks("x11",dir2+"Atm_CO2_conc_timeseries_1850-2169")
  res@tmYRMinorPerMajor=4
  res@tmYLTickSpacingF=1
  res@tmYLTickStartF=-2.0
- res@xyLineColors   = (/"red","blue"/)
+ res@xyLineColors   = (/"grey40","darkorange"/)
  res@xyLineThicknessF= 5
  res@tiXAxisString       =       "Year"
  res@tiXAxisFontHeightF =0.02
@@ -85,10 +92,12 @@ wks=gsn_open_wks("x11",dir2+"Atm_CO2_conc_timeseries_1850-2169")
  res@xyDashPatterns    =   (/0,0/)
  res@trXMinF             =       0
  res@trXMaxF             =       320
- res@gsnCenterString="Atm. CO2 Concentration"
- res@trYMinF       =  200
- res@trYMaxF       =  1000 
- res@tiYAxisString       =       "CO2 fluxes into the ocean [PgC/yr]"
+ res@gsnCenterString="Atm. CO~B~2~N~ Concentration"
+ res@gsnCenterStringFontHeightF=0.022
+ res@trYMinF       =  200.
+ res@trYMaxF       =  1000. 
+ res@tiYAxisString       =       "ppm"
+ res@gsnCenterStringOrthogonalPosF=0.06
 ; res@tiMainString       =   "Temperature Advection Budget(100-300m | 150E-90W, 20S-20N)"
  ;res@tmXBTickStartF=1990
  ;res@tmXBTickSpacingF=5
@@ -97,40 +106,55 @@ wks=gsn_open_wks("x11",dir2+"Atm_CO2_conc_timeseries_1850-2169")
 ; res@tmYLFormat = "0*+^e"      ; use "e" symbol, don't force 0's (see documentation)
  plot(0)=gsn_csm_xy(wks,year,CO2,res)
  res@gsnCenterString="2m Temperature"
- res@trYMinF       =  280
- res@trYMaxF       =  300 
- res@tiYAxisString       =       "2m Temperatrue (K)"
+ res@trYMinF       =  285.
+ res@trYMaxF       =  292.
+ res@tiYAxisString       =       "K"
  plot(1)=gsn_csm_xy(wks,year,tas,res)
- res@gsnCenterString="2m Temperature"
- res@trYMinF       =  280
- res@trYMaxF       =  300 
- res@tiYAxisString       =       "2m Temperatrue (K)"
- plot(2)=gsn_csm_xy(wks,year,tas,res)
- res@gsnCenterString="2m Temperature"
- res@trYMinF       =  280
- res@trYMaxF       =  300 
- res@tiYAxisString       =       "2m Temperatrue (K)"
- plot(3)=gsn_csm_xy(wks,year,tas,res)
+ res@gsnCenterString="Air-Sea CO~B~2~N~ flux"
+ res@trYMinF       =  -0.5
+ res@trYMaxF       =  4 
+ res@tiYAxisString       =       "PgC/yr"
+ res@gsnYRefLine         =       0
+ res@gsnYRefLineThicknessF       =       3.0
+ res@gsnYRefLineDashPattern      =       2
+ plot(2)=gsn_csm_xy(wks,year,fgco2,res)
+ res@gsnCenterString="Air-Land CO~B~2~N~ flux"
+ res@trYMinF       = -3 
+ res@trYMaxF       =  8
+ res@tiYAxisString       =      "PgC/yr"
+ plot(3)=gsn_csm_xy(wks,year,nbp,res)
 
  gres = True
- gres@YPosPercent = 12.
- gres@XPosPercent = 60
- gres@ItemSpacePercent          = 5
+ gres@YPosPercent = 94.
+ gres@XPosPercent = 4
+ gres@ItemSpacePercent          = 6
  lineres = True
- lineres@lgLineColors =(/"red","blue"/)
+ lineres@lgLineColors =(/"grey40","darkorange"/)
  lineres@lgLineThicknesses = 4
  lineres@LineLengthPercent = 4.
  lineres@lgDashIndexes            = (/0,0/)
  textres = True
  textres@lgLabels = (/"esm-flat10","esm-flat10-zec"/)
-; textres@lgLabelFontHeights   =(/0.012,0.012,0.012,0.012/)
+ textres@lgLabelFontHeights   =(/0.025,0.025/)
  textres@lgPerimOn                = False
- textres@lgItemCount              = 3
+ textres@lgItemCount              = 4
  ;textres@lgLabelOffsetF=0.1
  plot(0) = simple_legend(wks,plot(0),gres,lineres,textres)
+ plot(1) = simple_legend(wks,plot(1),gres,lineres,textres)
+ gres@YPosPercent = 94.
+ gres@XPosPercent = 63
+ plot(2) = simple_legend(wks,plot(2),gres,lineres,textres)
+ plot(3) = simple_legend(wks,plot(3),gres,lineres,textres)
 
+ pres                       =   True
+ pres@gsnFrame         = False
+ pres@gsnPanelLabelBar      = False
+ pres@gsnMaximize        =       False
+ pres@gsnPanelYWhiteSpacePercent = 5
+ pres@gsnPanelXWhiteSpacePercent = 5
+ ;pres@gsnPanelLeft  =0.1
+ gsn_panel(wks,plot,(/2,2/),pres)
 
- draw(plot)
  frame(wks)
 
 end
