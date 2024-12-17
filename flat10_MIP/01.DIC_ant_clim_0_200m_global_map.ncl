@@ -54,7 +54,7 @@ printMinMax(dic_200m_avg,0)
  res@mpPerimOn = False
  res@mpCenterLonF =0
  res@gsnCenterStringFontHeightF= 0.020
- res@gsnCenterString="DIC~B~ant~N~ ; Surface"
+ res@gsnCenterString="(a) Surface"
  res@gsnLeftString=""
  res@gsnRightString=""
  res@gsnCenterStringOrthogonalPosF=0.05
@@ -72,7 +72,7 @@ printMinMax(dic_200m_avg,0)
  res@cnFillPalette          =       "cmocean_deep"
 
  plot(0)=gsn_csm_contour_map(wks,dic_surf_avg,res)
- res@gsnCenterString="DIC~B~ant~N~ ; 200m"
+ res@gsnCenterString="(b) 200m"
  plot(1)=gsn_csm_contour_map(wks,dic_200m_avg ,res)
 
  pres                       =   True

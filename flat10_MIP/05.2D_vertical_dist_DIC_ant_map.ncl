@@ -76,7 +76,7 @@ res@cnLineLabelsOn         =       False
 res@tmYRMode             = "Automatic"          ; turn off special labels on right axis
 res@gsnCenterStringFontHeightF= 0.025
 res@gsnCenterStringOrthogonalPosF=0.05
-res@gsnCenterString="Atlantic Ocean"
+res@gsnCenterString="(a) Atlantic Ocean"
 res@gsnLeftString=""
 res@gsnRightString=""
 
@@ -86,9 +86,9 @@ res@gsnRightString=""
 res@tiYAxisString="Depth (m)"
 plot(0)  = gsn_csm_contour(wks, DIC_ant_Atl_avg, res )   ; plaace holder
 res@tiYAxisString=""
-res@gsnCenterString="Pacific Ocean"
+res@gsnCenterString="(b) Pacific Ocean"
 plot(1)  = gsn_csm_contour(wks, DIC_ant_Pac_avg, res )   ; plaace holder
-res@gsnCenterString="Indian Ocean"
+res@gsnCenterString="(c) Indian Ocean"
 plot(2)  = gsn_csm_contour(wks, DIC_ant_Ind_avg, res )   ; plaace holder
 
  pres                       =   True
