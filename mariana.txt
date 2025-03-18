@@ -1,0 +1,40 @@
+# Maiana
+
+term01=rcar x (-NPP)
+term02=rcar x (-pho_cya)
+term03=rcar x (epsher  x (1-zinges) x graz)
+term04=rcar x (ecan x zoomor)
+term05=rcar x (bacfa)
+term06=rcar x (remin)
+term07=(-delcar)
+term08=rcar x (denit)
+term09=rcar x (sulfat_red)
+term10=(-co2flux / dz)
+
+Tdic_sosi / dz = term01+term02+term03+term04+term05+term06+term07+term08+term09+term10
+
+rcar = 122;
+epsher = 0.8;
+zinges = 0.6;
+ecan = 0.95;
+
+###########################
+MPI-ESM
+
+term01=rcar x (-NPP)
+term02=rcar x (-phosy_cya) # 
+term03=rcar x (epsher  x (1-zinges) x graz)
+term04=rcar x (ecan x zoomor)
+term05=rcar x (bacfa)
+term06=rcar x (remin)
+term07=(-delcar)
+term08=rcar x (denit)
+term09=rcar x (sulfat_red)
+term10=(-co2flux / dz)
+
+Tdic_sosi / dz = term01+term02+term03+term04+term05+term06+term07+term08+term09+term10
+
+rcar = 122;
+epsher = 0.8;
+zinges = 0.6;
+

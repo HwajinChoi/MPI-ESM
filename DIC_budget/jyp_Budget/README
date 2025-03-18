@@ -1,0 +1,5 @@
+
+gfortran -ffree-line-length-none hj_cal.no3.budget.advection_new.f90
+
+
+
