@@ -45,7 +45,7 @@ res@gsnDraw                =       False
 res@cnLineLabelsOn         =       False
 res@cnLineLabelsOn       = True                 ; turn on line labels
 res@cnFillOn             = True                 ; turn on color fill
-res@cnFillPalette        = "matlab_hsv"
+res@cnFillPalette        = "BlAqGrYeOrRe"
 res@trYReverse =True
 res@vpWidthF       = 0.65            ; Change the aspect ratio, but 
 res@vpHeightF      = 0.5
@@ -63,6 +63,7 @@ res@gsnRightString=""
 res@tmXBLabelFontHeightF=0.026
 res@tmYLLabelFontHeightF=0.026
 res@tiYAxisFontHeightF=0.028
+res@gsnYAxisIrregular2Linear = True ;-- converts irreg depth to linear
 res@tiYAxisString="Depth (m)"
 
 res@cnLevelSelectionMode = "ManualLevels"       ; manually select levels
