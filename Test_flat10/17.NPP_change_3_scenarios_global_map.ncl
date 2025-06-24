@@ -52,6 +52,8 @@ flat10_cdr(0,:,:)=First_cdr_npp
 flat10_cdr(1,:,:)=Last_cdr_npp
 flat10_cdr(2,:,:)=Last_First_cdr_npp
 flat10_cdr!0="period"
+printVarSummary(flat10_cdr)
+exit
 
 ;--- Unit convertion---
 flat10=flat10*12.01*31536000

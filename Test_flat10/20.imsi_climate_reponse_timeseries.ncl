@@ -44,7 +44,7 @@ print(dic_inv_del(1,100:298))
 
 year=ispan(1,300,1)
 
-wks=gsn_open_wks("png",dir1+"imsi_Climate_variabiles_timeseries_3scenarios_300years")
+wks=gsn_open_wks("png",dir1+"test_imsi_Climate_variabiles_timeseries_3scenarios_300years")
  plot=new(8,graphic)
  res                =   True
  res@gsnMaximize    =   True
