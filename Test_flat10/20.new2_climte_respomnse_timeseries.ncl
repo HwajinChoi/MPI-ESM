@@ -40,8 +40,8 @@ printMinMax(T_del,0)
 
 year=ispan(1,300,1)
 
-wks=gsn_open_wks("png",dir1+"test_Climate_variabiles_timeseries_3scenarios_300years")
- plot=new(10,graphic)
+wks=gsn_open_wks("pdf",dir1+"test_Climate_variabiles_timeseries_3scenarios_300years")
+ plot=new(9,graphic)
  res                =   True
  res@gsnMaximize    =   True
  ;res@gsnPaperOrientation =       "portrait"
@@ -85,8 +85,10 @@ wks=gsn_open_wks("png",dir1+"test_Climate_variabiles_timeseries_3scenarios_300ye
  res@trYMinF       =  -500
  res@trYMaxF       =  4000
  res@tiYAxisString       =       "[PgC]"
+ res@gsnXRefLine=150.
+ res@gsnXRefLineDashPattern=1
  plot(1)=gsn_csm_xy(wks,year,E_cum,res)
- res@gsnCenterString="(c) Atmospheric CO~B~2~N~ Concentration"
+ res@gsnCenterString="(c) Atmos. CO~B~2~N~ Conc."
  res@trYMinF       =  200
  res@trYMaxF       =  1000
  res@tiYAxisString       =       "[ppm]"
@@ -101,12 +103,7 @@ wks=gsn_open_wks("png",dir1+"test_Climate_variabiles_timeseries_3scenarios_300ye
  res@trYMaxF       =900  
  res@tiYAxisString       =       "[PgC]"
  plot(4)=gsn_csm_xy(wks,year,OCE,res)
- res@gsnCenterString="(f) Land Carbon Sink"
- res@trYMinF       =  0
- res@trYMaxF       = 3100 
- res@tiYAxisString       =       "[PgC]"
- plot(5)=gsn_csm_xy(wks,year,LAND,res)
- delete([/res@trXMinF,res@trXMaxF/])
+ delete([/res@trXMinF,res@trXMaxF,res@gsnXRefLine,res@gsnXRefLine/])
  res@gsnCenterString="(i) NPP"
  res@trXMinF             =       0
  res@trXMaxF             =       300
@@ -114,15 +111,16 @@ wks=gsn_open_wks("png",dir1+"test_Climate_variabiles_timeseries_3scenarios_300ye
  res@trYMaxF       =  150
  res@tiYAxisString       =       "[g C m~S~-2~N~ yr~S~-1~N~]"
  plot(8)=gsn_csm_xy(wks,year,npp,res)
- res@gsnCenterString="(j) AMOC"
+ res@gsnCenterString="(h) AMOC"
  res@trYMinF       =  10 
  res@trYMaxF       =  24
  res@tiYAxisString       =       "[Sv]"
- plot(9)=gsn_csm_xy(wks,year,AMOC,res)
+ plot(7)=gsn_csm_xy(wks,year,AMOC,res)
  delete([/res@trXMinF,res@trXMaxF,res@xyLineColors,res@xyDashPatterns/])
  res@tiXAxisString       =       "Cumulative emission [PgC]"
  plot2=new(2,graphic)
  plot3=new(2,graphic)
+ delete([/res@gsnYRefLine,res@gsnYRefLineDashPattern/])
  res@xyLineColor   = (/"grey40"/)
  res@xyDashPatterns    =   (/0/)
  res@gsnCenterString="(g) TCRE"
@@ -142,13 +140,13 @@ wks=gsn_open_wks("png",dir1+"test_Climate_variabiles_timeseries_3scenarios_300ye
  delete([/res@trXMinF,res@trXMaxF/])
  res@xyLineColor   = (/"grey40"/)
  res@tiXAxisString       =       "Cumulative emission [PgC]"
- res@gsnCenterString="(h)Ocean DIC inventory change"
+ res@gsnCenterString="(f)Ocean DIC inventory change"
  res@trYMinF       =0  
  res@trYMaxF       =  870
  res@trXMinF       =  20 
  res@trXMaxF       =  3000
  res@tiYAxisString       =       ""
- plot(7)=gsn_csm_xy(wks,E_cum(0,:),dic_inv_del(0,:),res)
+ plot(5)=gsn_csm_xy(wks,E_cum(0,:),dic_inv_del(0,:),res)
  res@tiXAxisString       =       "[PgC]"
  res@gsnCenterString       =       ""
  res@xyLineColor   = (/"darkorange"/)
@@ -157,8 +155,8 @@ wks=gsn_open_wks("png",dir1+"test_Climate_variabiles_timeseries_3scenarios_300ye
  plot3(1)=gsn_csm_xy(wks,E_cum(2,:),dic_inv_del(2,:),res)
  overlay(plot(6),plot2(0))
  overlay(plot(6),plot3(0))
- overlay(plot(7),plot2(1))
- overlay(plot(7),plot3(1))
+ overlay(plot(5),plot2(1))
+ overlay(plot(5),plot3(1))
 
  gres = True
  gres@YPosPercent = 18.
@@ -177,7 +175,7 @@ wks=gsn_open_wks("png",dir1+"test_Climate_variabiles_timeseries_3scenarios_300ye
  ;textres@lgLabelOffsetF=0.1
  plot(0) = simple_legend(wks,plot(0),gres,lineres,textres)
  plot(8) = simple_legend(wks,plot(8),gres,lineres,textres)
- plot(9) = simple_legend(wks,plot(9),gres,lineres,textres)
+ plot(7) = simple_legend(wks,plot(7),gres,lineres,textres)
 
  gres@YPosPercent = 94.
  gres@XPosPercent = 4
@@ -186,15 +184,16 @@ wks=gsn_open_wks("png",dir1+"test_Climate_variabiles_timeseries_3scenarios_300ye
  plot(3) = simple_legend(wks,plot(3),gres,lineres,textres)
  plot(4) = simple_legend(wks,plot(4),gres,lineres,textres)
  plot(5) = simple_legend(wks,plot(5),gres,lineres,textres)
+ plot(6) = simple_legend(wks,plot(6),gres,lineres,textres)
 
  pres                       =   True
  pres@gsnFrame         = False
  pres@gsnPanelLabelBar      = False
  pres@gsnMaximize        =       False
- pres@gsnPanelYWhiteSpacePercent = 5
+ pres@gsnPanelYWhiteSpacePercent = 3
  pres@gsnPanelXWhiteSpacePercent = 5
  ;pres@gsnPanelLeft  =0.1
- gsn_panel(wks,plot,(/5,2/),pres)
+ gsn_panel(wks,plot,(/3,3/),pres)
 
  frame(wks)
 

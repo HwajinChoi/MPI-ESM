@@ -124,7 +124,7 @@ Last_Middle_cdr_moc=CDR_moc(1,:,:)
 ;------------------------------------------------------
 plot=new(15,graphic)
 plot2=new(15,graphic)
-wks   = gsn_open_wks ("png", dir1+"AMOC_2CDRmore_2D_vertical_flat10mip_DICs_${P}_Last_First_ano" )          ; send graphics to PNG file
+wks   = gsn_open_wks ("pdf", dir1+"AMOC_2CDRmore_2D_vertical_flat10mip_DICs_${P}_Last_First_ano" )          ; send graphics to PNG file
 res                      = True                 ; plot mods desired
 res@cnLevelSelectionMode   =       "ManualLevels"
 res@trYReverse =True

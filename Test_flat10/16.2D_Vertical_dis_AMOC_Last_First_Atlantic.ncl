@@ -90,13 +90,13 @@ ggg=addfile(    dir0+"AMOC_simulations_CDR_First_Middle_Last_diff_300years.nc","
 ggg->CDR_moc=CDR_moc
 ggg->lat=lat
 ggg->depth_2=depth_2
-exit
+;exit
 
 
 ;------------------------------------------------------
 plot=new(6,graphic)
 plot1=new(3,graphic)
-wks   = gsn_open_wks ("png", dir1+"2D_vertical_flat10mip_AMOC_Last_First" )          ; send graphics to PNG file
+wks   = gsn_open_wks ("pdf", dir1+"2D_vertical_flat10mip_AMOC_Last_First" )          ; send graphics to PNG file
 res                      = True                 ; plot mods desired
 res@cnLineLabelsOn         =       False
 res@cnLinesOn=False

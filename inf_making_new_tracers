@@ -1,0 +1,16 @@
+####################################################################
+# 03.02.2025 Hwa-Jin; How to add new tracers on the restart files
+# NEW_TRACERS    : isco2nat, ialkanat, icalcnat
+# Origin tracers : sco212,    alkali,    calc 
+####################################################################
+
+
+cdo -selname,${orgin_vari} input.nc output1.nc
+
+cdo -chname,${orgin_vari},${new_tracer} output1.nc output2.nc
+
+cdo merge input.nc output2.nc
+
+
+cdo -setattribute,ialkanat@standard_name="natural_alkalinity" TEST.nc test2.nc
+cdo -setattribute,ialkanat@long_name="natural_alkalinity"
