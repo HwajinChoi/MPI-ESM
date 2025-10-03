@@ -40,7 +40,7 @@ printMinMax(T_del,0)
 
 year=ispan(1,300,1)
 
-wks=gsn_open_wks("pdf",dir1+"test_Climate_variabiles_timeseries_3scenarios_300years")
+wks=gsn_open_wks("png",dir1+"test_Climate_variabiles_timeseries_3scenarios_300years")
  plot=new(9,graphic)
  res                =   True
  res@gsnMaximize    =   True

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for P in "Atlantic" ;do
+for P in "Pacific" ;do
 
  if [ $P = "Atlantic" ];then
   A=340
@@ -86,7 +86,7 @@ Last_flt_cdr(0,:,:)=dim_avg_n_Wrap(flt_cdr_tot_an(270:299,:,:),0)
 Last_flt_cdr(1,:,:)=dim_avg_n_Wrap(flt_cdr_nat_an(270:299,:,:),0)
 Last_flt_cdr(2,:,:)=dim_avg_n_Wrap(flt_cdr_ant_an(270:299,:,:),0)
 Last_flt_cdr!0="scenarios"
-;------------------------------------------------------
+
 Middle_flt_cdr=new((/3,dim(1),dim(2)/),typeof(flt_cdr_tot_an))
 Middle_flt_cdr(0,:,:)=dim_avg_n_Wrap(flt_cdr_tot_an(135:164,:,:),0)
 Middle_flt_cdr(1,:,:)=dim_avg_n_Wrap(flt_cdr_nat_an(135:164,:,:),0)
@@ -103,113 +103,82 @@ Last_Middle_flt_cdr=Last_flt_cdr-Middle_flt_cdr
 copy_VarCoords(Last_flt_cdr,Middle_First_flt_cdr)
 copy_VarCoords(Last_flt_cdr,Last_Middle_flt_cdr)
 
+Last_First_flt_zec=Last_flt_zec-First_flt_zec
+copy_VarCoords(Last_flt_zec,Last_First_flt_zec)
+Last_First_flt_cdr=Last_flt_cdr-First_flt_cdr
+copy_VarCoords(Last_flt_cdr,Last_First_flt_cdr)
+
 levels=new(21,"float")
 
 do i=0,20
  levels(i)=-0.25+0.025*i
 end do
 ;------------------------------------------------------
-u=addfile(dir0+"AMOC_simulations_First_Last_diff_300years.nc","r")
-cdr_diff_amoc=u->flat10_cdr(2,:,:)
-zec_diff_amoc=u->flat10_zec(2,:,:)
-diff_amoc=u->flat10(2,:,:)
-lat=u->lat
-dep=u->depth_2
-
-u2=addfile(dir0+"AMOC_simulations_CDR_First_Middle_Last_diff_300years.nc","r")
-CDR_moc=u2->CDR_moc
-Middle_First_cdr_moc=CDR_moc(0,:,:)
-Last_Middle_cdr_moc=CDR_moc(1,:,:)
-
-;------------------------------------------------------
-plot=new(15,graphic)
-plot2=new(15,graphic)
-wks   = gsn_open_wks ("png", dir1+"AMOC_2CDRmore_2D_vertical_flat10mip_DICs_${P}_Last_First_ano" )          ; send graphics to PNG file
+plot=new(12,graphic)
+wks   = gsn_open_wks ("png", dir1+"2D_vertical_flat10mip_DICs_${P}_for_retreat" )          ; send graphics to PNG file
 res                      = True                 ; plot mods desired
 res@cnLevelSelectionMode   =       "ManualLevels"
+res@cnMaxLevelValF         =     0.25
+res@cnMinLevelValF         =     -0.25
+res@cnLevelSpacingF        =      0.025
+res@cnLineLabelsOn         =       False
+res@cnLinesOn=False
+res@cnLineLabelsOn       = True                 ; turn on line labels
+res@cnFillOn             = True                 ; turn on color fill
+res@cnFillPalette        = "GMT_polar"
 res@trYReverse =True
 res@vpWidthF       = 0.65            ; Change the aspect ratio, but 
 res@vpHeightF      = 0.5
-res@gsnDraw                =       False
+res@cnMissingValFillColor="black"
+res@lbLabelBarOn           = False
 res@gsnFrame               =       False
+res@gsnDraw                =       False
+;res@tmYLLabels =(..)
+res@cnInfoLabelOn          =   False
+res@cnLineLabelsOn         =       False
 res@tmYRMode             = "Automatic"          ; turn off special labels on right axis
 res@gsnYAxisIrregular2Linear = True ;-- converts irreg depth to linear
-res1=res
-res@gsnCenterStringFontHeightF= 0.045
+res@gsnCenterStringFontHeightF= 0.05
 res@gsnCenterStringOrthogonalPosF=0.05
 res@tmXBLabelFontHeightF=0.03
 res@tmYLLabelFontHeightF=0.03
 res@tiYAxisFontHeightF=0.03
 
-res1@cnLineLabelsOn       = True
-res1@gsnContourZeroLineThicknessF = 2. 	; doubles thickness of zero contour
-res1@gsnContourNegLineDashPattern = 1 	; sets negative contours to dash pattern 1
-res1@cnMaxLevelValF         =     4
-res1@cnMinLevelValF         =     -4
-res1@cnLevelSpacingF        =      1.0
-res1@cnInfoLabelOn          =   False
-res1@gsnLeftString=""
-res1@gsnRightString=""
-res1@gsnCenterString=""
-res1@cnLineLabelsOn         =       False
-
-res@cnInfoLabelOn          =   False
-res@cnLineLabelsOn         =       False
-res@cnLinesOn=False
-res@cnFillOn             = True                 ; turn on color fill
-res@cnFillPalette        = "GMT_polar"
-res@cnMissingValFillColor="black"
-res@lbLabelBarOn           = False
-res@cnMaxLevelValF         =     0.25
-res@cnMinLevelValF         =     -0.25
-res@cnLevelSpacingF        =      0.025
-res@gsnCenterString="(a) flat10"
+res@gsnCenterString="(a) DIC~B~tot~N~"
 res@gsnLeftString=""
 res@gsnRightString=""
 res@tiYAxisOn=True
 res@tiYAxisString="Depth (m)"
 
 plot(0)  = gsn_csm_contour(wks, Last_First_flt(0,:,:), res )   ; plaace holder
-res@gsnCenterString=""
-plot(5)  = gsn_csm_contour(wks, Last_First_flt(1,:,:),res )   ; plaace holder
-plot(10)  = gsn_csm_contour(wks, Last_First_flt(2,:,:), res )   ; plaace holder
+res@gsnCenterString="(b) DIC~B~nat~N~"
 res@tiYAxisString=""
-res@tmYLLabelsOn	= False
-res@gsnCenterString="(b) flat10-zec"
-plot(1)  = gsn_csm_contour(wks, Last_First_flt_zec(0,:,:), res )   ; plaace holder
+res@tmYLLabelsOn        = False
+plot(1)  = gsn_csm_contour(wks, Last_First_flt(1,:,:),res )   ; plaace holder
+res@gsnCenterString="(c) DIC~B~ant~N~"
+plot(2)  = gsn_csm_contour(wks, Last_First_flt(2,:,:), res )   ; plaace holder
 res@gsnCenterString=""
-plot(6)  = gsn_csm_contour(wks, Last_First_flt_zec(1,:,:), res )   ; plaace holder
-plot(11)  = gsn_csm_contour(wks, Last_First_flt_zec(2,:,:), res )   ; plaace holder
-res@gsnCenterString="(c) flat10-cdr"
-plot(2)  = gsn_csm_contour(wks, Last_First_flt_cdr(0,:,:), res )   ; plaace holder
-res@gsnCenterString=""
-plot(7)  = gsn_csm_contour(wks, Last_First_flt_cdr(1,:,:), res )   ; plaace holder
-plot(12)  = gsn_csm_contour(wks, Last_First_flt_cdr(2,:,:), res )   ; plaace holder
-
-res@gsnCenterString="(d) flat10-cdr(Middle-First)"
+res@tiYAxisString="Depth (m)"
+res@tmYLLabelsOn        = True
 plot(3)  = gsn_csm_contour(wks, Middle_First_flt_cdr(0,:,:), res )   ; plaace holder
-res@gsnCenterString=""
-plot(8)  = gsn_csm_contour(wks, Middle_First_flt_cdr(1,:,:), res )   ; plaace holder
-plot(13)  = gsn_csm_contour(wks, Middle_First_flt_cdr(2,:,:), res )   ; plaace holder
-res@gsnCenterString="(e) flat10-cdr(Last-Middle)"
-plot(4)  = gsn_csm_contour(wks, Last_Middle_flt_cdr(0,:,:), res )   ; plaace holder
-res@gsnCenterString=""
-plot(9)  = gsn_csm_contour(wks, Last_Middle_flt_cdr(1,:,:), res )   ; plaace holder
-plot(14)  = gsn_csm_contour(wks, Last_Middle_flt_cdr(2,:,:), res )   ; plaace holder
-
-res1@gsnCenterString=""
-
-do j=0,2
-plot2(5*j)= gsn_csm_contour(wks, diff_amoc, res1 )
-plot2(5*j+1)= gsn_csm_contour(wks, zec_diff_amoc, res1 )
-plot2(5*j+2)= gsn_csm_contour(wks, cdr_diff_amoc, res1 )
-plot2(5*j+3)= gsn_csm_contour(wks, Middle_First_cdr_moc, res1 )
-plot2(5*j+4)= gsn_csm_contour(wks, Last_Middle_cdr_moc, res1 )
-end do
-
-do i=0,14
-overlay(plot(i),plot2(i))
-end do
+res@tiYAxisString=""
+res@tmYLLabelsOn        = False
+plot(4)  = gsn_csm_contour(wks, Middle_First_flt_cdr(1,:,:), res )   ; plaace holder
+plot(5)  = gsn_csm_contour(wks, Middle_First_flt_cdr(2,:,:), res )   ; plaace holder
+res@tiYAxisString="Depth (m)"
+res@tmYLLabelsOn        = True
+plot(6)  = gsn_csm_contour(wks, Last_Middle_flt_cdr(0,:,:), res )   ; plaace holder
+res@tiYAxisString=""
+res@tmYLLabelsOn        = False
+plot(7)  = gsn_csm_contour(wks, Last_Middle_flt_cdr(1,:,:), res )   ; plaace holder
+plot(8)  = gsn_csm_contour(wks, Last_Middle_flt_cdr(2,:,:), res )   ; plaace holder
+res@tiYAxisString="Depth (m)"
+res@tmYLLabelsOn        = True
+plot(9)  = gsn_csm_contour(wks, Last_First_flt_cdr(0,:,:), res )   ; plaace holder
+res@tiYAxisString=""
+res@tmYLLabelsOn        =False
+plot(10)  = gsn_csm_contour(wks, Last_First_flt_cdr(1,:,:), res )   ; plaace holder
+plot(11)  = gsn_csm_contour(wks, Last_First_flt_cdr(2,:,:), res )   ; plaace holder
 
 pres                       =   True
 pres@gsnFrame         = False
@@ -221,19 +190,23 @@ pres@gsnPanelMainFontHeightF=0.02
 pres@lbLabelFontHeightF  = 0.013
 pres@lbLabelStride     =   4
 pres@gsnPanelMainString="${P}"
-pres@gsnPanelLeft=0.08
+pres@gsnPanelLeft=0.10
 pres@lbLabelStrings       = sprintf("%4.2f",levels)   ; Format the labels
 
 txres1               = True
 txres1@txFontHeightF = 0.015
-gsn_text_ndc(wks,"DIC~B~tot~N~",0.05,0.63,txres1)
-gsn_text_ndc(wks,"DIC~B~nat~N~",0.05,0.48,txres1)
-gsn_text_ndc(wks,"DIC~B~ant~N~",0.05,0.35,txres1)
+gsn_text_ndc(wks,"flat10",0.07,0.83,txres1)
+gsn_text_ndc(wks,"(P3 - P1)",0.07,0.80,txres1)
+gsn_text_ndc(wks,"flat10-cdr",0.07,0.62,txres1)
+gsn_text_ndc(wks,"(P2 - P1)",0.07,0.59,txres1)
+gsn_text_ndc(wks,"flat10-cdr",0.07,0.39,txres1)
+gsn_text_ndc(wks,"(P3 - P2)",0.07,0.36,txres1)
+gsn_text_ndc(wks,"flat10-cdr",0.07,0.17,txres1)
+gsn_text_ndc(wks,"(P3 - P1)",0.07,0.14,txres1)
 txres1@txFontHeightF = 0.012
+gsn_text_ndc(wks,"[mol/m~S~3~N~]",0.9,0.035,txres1)
 
-gsn_text_ndc(wks,"[mol/m~S~3~N~]",0.94,0.25,txres1)
-
-gsn_panel(wks,plot,(/3,5/),pres)
+gsn_panel(wks,plot,(/4,3/),pres)
 frame(wks)
 end
 

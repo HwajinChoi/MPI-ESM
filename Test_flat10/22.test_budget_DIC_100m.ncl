@@ -1,29 +1,17 @@
-#!/bin/bash
-for V in "DIC" "DICnat" "tpreformed_DIC" ;do
-
- if [ $V = "tpreformed_DIC" ];then
-  A="tpreformed_DIC"
- elif [ $V = "DIC" ];then
-  A="tsco212"
- else
-  A="tsco212nat"
- fi
-
-cat << EOF > ./imsi.ncl
 begin
 dir="/work/uo1451/m301158/MPI-ESM/data/test_budget/"
 dir1="/work/uo1451/m301158/MPI-ESM/image/"
-f=addfile(dir+"test3_${V}_reg_0_100mavg_ym_1850.nc","r")
+f=addfile(dir+"test4_DIC_3d_ym_1850_100m.nc","r")
 lon=f->lon
 lat=f->lat
-tot=f->${A}_tot(0,:,:)
-adv=f->${A}_adv(0,:,:)
-dif=f->${A}_dif(0,:,:)
-gm=f->${A}_gm(0,:,:)
-sosi=f->${A}_sosi(0,:,:)
+tot=f->tsco212_tot(0,0,:,:)
+adv=f->tsco212_adv(0,0,:,:)
+dif=f->tsco212_dif(0,0,:,:)
+gm=f->tsco212_gm(0,0,:,:)
+bc=f->tsco212_sosi(0,0,:,:)
 
 plot=new(5,graphic)
- wks=gsn_open_wks("png",dir1+"Test3_budget_${V}")
+ wks=gsn_open_wks("png",dir1+"Test4_budget_DIC_100m")
  res                        =   True
  res@gsnFrame               =       False
  res@gsnDraw                =       False
@@ -59,7 +47,7 @@ plot=new(5,graphic)
  res@gsnCenterString="(d) GM"
  plot(3)=gsn_csm_contour_map(wks,gm,res)
  res@gsnCenterString="(e) Source/sink"
- plot(4)=gsn_csm_contour_map(wks,sosi,res)
+ plot(4)=gsn_csm_contour_map(wks,bc,res)
 
  pres                       =   True
  pres@gsnFrame         = False
@@ -68,15 +56,8 @@ plot=new(5,graphic)
  pres@gsnPanelLeft=0.1
  pres@gsnMaximize        =       False
  pres@gsnPanelYWhiteSpacePercent = 4
- pres@gsnPanelMainString="mean budget terms of ${V} (0-100m)"
+ pres@gsnPanelMainString="DIC (100m)"
 
  gsn_panel(wks,plot,(/3,2/),pres)
  frame(wks)
-
 end
-EOF
- ncl ./imsi.ncl
- rm -f ./imsi.ncl
-done
-
-

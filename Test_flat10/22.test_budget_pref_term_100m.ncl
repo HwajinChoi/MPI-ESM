@@ -1,29 +1,17 @@
-#!/bin/bash
-for V in "DIC" "DICnat" "tpreformed_DIC" ;do
-
- if [ $V = "tpreformed_DIC" ];then
-  A="tpreformed_DIC"
- elif [ $V = "DIC" ];then
-  A="tsco212"
- else
-  A="tsco212nat"
- fi
-
-cat << EOF > ./imsi.ncl
 begin
 dir="/work/uo1451/m301158/MPI-ESM/data/test_budget/"
 dir1="/work/uo1451/m301158/MPI-ESM/image/"
-f=addfile(dir+"test3_${V}_reg_0_100mavg_ym_1850.nc","r")
+f=addfile(dir+"test4_tpreformed_DIC_3d_ym_1850_100m.nc","r")
 lon=f->lon
 lat=f->lat
-tot=f->${A}_tot(0,:,:)
-adv=f->${A}_adv(0,:,:)
-dif=f->${A}_dif(0,:,:)
-gm=f->${A}_gm(0,:,:)
-sosi=f->${A}_sosi(0,:,:)
+tot=f->tpreformed_DIC_tot(0,0,:,:)
+adv=f->tpreformed_DIC_adv(0,0,:,:)
+dif=f->tpreformed_DIC_dif(0,0,:,:)
+gm=f->tpreformed_DIC_gm(0,0,:,:)
+bc=f->tpreformed_DIC_bc(0,0,:,:)
 
 plot=new(5,graphic)
- wks=gsn_open_wks("png",dir1+"Test3_budget_${V}")
+ wks=gsn_open_wks("png",dir1+"Test4_budget_tpreformed_DIC_100m")
  res                        =   True
  res@gsnFrame               =       False
  res@gsnDraw                =       False
@@ -41,25 +29,25 @@ plot=new(5,graphic)
  res@cnLineLabelsOn         =       False
  res@mpLandFillColor    =   "black"
  res@cnLevelSelectionMode   =       "ManualLevels"
- res@cnMaxLevelValF         =     0.0000000006
- res@cnMinLevelValF         =     -0.0000000006
- res@cnLevelSpacingF        =      0.0000000001
+ res@cnMaxLevelValF         =     0.000000006
+ res@cnMinLevelValF         =     -0.000000006
+ res@cnLevelSpacingF        =      0.000000001
  res@lbLabelFontHeightF  = 0.024
  res@cnFillPalette          =       "temp_diff_18lev"
  res@lbLabelStride     =   4
  res@lbLabelBarOn           =      True
  plot(0)=gsn_csm_contour_map(wks,tot,res)
- res@cnMaxLevelValF         =     0.000000003
- res@cnMinLevelValF         =     -0.000000003
- res@cnLevelSpacingF        =      0.0000000005
+ res@cnMaxLevelValF         =     0.00000003
+ res@cnMinLevelValF         =     -0.00000003
+ res@cnLevelSpacingF        =      0.000000005
  res@gsnCenterString="(b) Advection"
  plot(1)=gsn_csm_contour_map(wks,adv,res)
  res@gsnCenterString="(c) Diffusion"
  plot(2)=gsn_csm_contour_map(wks,dif,res)
  res@gsnCenterString="(d) GM"
  plot(3)=gsn_csm_contour_map(wks,gm,res)
- res@gsnCenterString="(e) Source/sink"
- plot(4)=gsn_csm_contour_map(wks,sosi,res)
+ res@gsnCenterString="(e) Boundary condition"
+ plot(4)=gsn_csm_contour_map(wks,bc,res)
 
  pres                       =   True
  pres@gsnFrame         = False
@@ -68,15 +56,8 @@ plot=new(5,graphic)
  pres@gsnPanelLeft=0.1
  pres@gsnMaximize        =       False
  pres@gsnPanelYWhiteSpacePercent = 4
- pres@gsnPanelMainString="mean budget terms of ${V} (0-100m)"
+ pres@gsnPanelMainString="preformed_DIC (100m)"
 
  gsn_panel(wks,plot,(/3,2/),pres)
  frame(wks)
-
 end
-EOF
- ncl ./imsi.ncl
- rm -f ./imsi.ncl
-done
-
-
