@@ -6,6 +6,7 @@ f=addfile(dir0+"for_figure1_variables_for_timeseries_for_300years.nc","r")
 
 co2=f->co2
 OCE=f->OCE
+co2=co2*2.13
 year=ispan(1,300,1)
 
 wks=gsn_open_wks("png",dir1+"CDR_2_plots_Climate_variabiles_timeseries_3scenarios_300years")
@@ -40,10 +41,10 @@ wks=gsn_open_wks("png",dir1+"CDR_2_plots_Climate_variabiles_timeseries_3scenario
  res@gsnCenterStringOrthogonalPosF=0.06
  res@gsnXRefLine=150.
  res@gsnXRefLineDashPattern=1
- res@gsnCenterString="(b) Atmospheric CO~B~2~N~ Concentration"
- res@trYMinF       =  200
- res@trYMaxF       =  600
- res@tiYAxisString       =       "[ppm]"
+ res@gsnCenterString="(b) Atmospheric CO~B~2~N~ inventory"
+ res@trYMinF       =  400
+ res@trYMaxF       =  1200
+ res@tiYAxisString       =       "[PgC]"
  plot(1)=gsn_csm_xy(wks,year,co2(2,:),res)
  res@gsnCenterString="(a) Ocean Carbon Sink"
  res@trYMinF       =  0

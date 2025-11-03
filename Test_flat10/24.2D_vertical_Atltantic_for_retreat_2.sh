@@ -124,7 +124,7 @@ Last_Middle_cdr_moc=CDR_moc(1,:,:)
 ;------------------------------------------------------
 plot=new(3,graphic)
 plot2=new(3,graphic)
-wks   = gsn_open_wks ("png", dir1+"RETREAT_LAST_FIRST_2D_vertical_flat10mip_DICs_${P}" )          ; send graphics to PNG file
+wks   = gsn_open_wks ("png", dir1+"RETREAT_MIDDLE_FIRST_2D_vertical_flat10mip_DICs_${P}" )          ; send graphics to PNG file
 res                      = True                 ; plot mods desired
 res@cnLevelSelectionMode   =       "ManualLevels"
 res@trYReverse =True
@@ -171,25 +171,25 @@ res@tiYAxisString="Depth (m)"
 ;-----------------------------------------------
 ;Last_Middle_flt_cdr, Last_First_flt_cdr
 ;-----------------------------------------------
-plot(0)  = gsn_csm_contour(wks, Last_First_flt_cdr(0,:,:), res )   ; plaace holder
+plot(0)  = gsn_csm_contour(wks, Middle_First_flt_cdr(0,:,:), res )   ; plaace holder
 res@gsnCenterString="(b) DIC~B~nat~N~"
 res@tiYAxisString=""
 res@tmYLLabelsOn	= False
-plot(1)  = gsn_csm_contour(wks, Last_First_flt_cdr(1,:,:),res )   ; plaace holder
+plot(1)  = gsn_csm_contour(wks, Middle_First_flt_cdr(1,:,:),res )   ; plaace holder
 res@gsnCenterString="(c) DIC~B~ant~N~"
-plot(2)  = gsn_csm_contour(wks, Last_First_flt_cdr(2,:,:), res )   ; plaace holder
+plot(2)  = gsn_csm_contour(wks, Middle_First_flt_cdr(2,:,:), res )   ; plaace holder
 res@gsnCenterString=""
 
 ;-----------------------------------------------
 ;Last_Middle_cdr_moc, Last_First_cdr_moc
 ;-----------------------------------------------
-plot2(0)= gsn_csm_contour(wks, cdr_diff_amoc, res1 )
-plot2(1)= gsn_csm_contour(wks, cdr_diff_amoc, res1 )
-plot2(2)= gsn_csm_contour(wks, cdr_diff_amoc, res1 )
+;plot2(0)= gsn_csm_contour(wks, cdr_diff_amoc, res1 )
+;plot2(1)= gsn_csm_contour(wks, cdr_diff_amoc, res1 )
+;plot2(2)= gsn_csm_contour(wks, cdr_diff_amoc, res1 )
 
-do i=0,2
-overlay(plot(i),plot2(i))
-end do
+;do i=0,2
+;overlay(plot(i),plot2(i))
+;end do
 
 pres                       =   True
 pres@gsnFrame         = False
