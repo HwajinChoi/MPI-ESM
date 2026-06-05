@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#for s in "flat10" "flat10_cdr" "flat10_zec";do
-for s in "flat10_cdr" ;do
+for s in "flat10" "flat10_cdr" "flat10_zec";do
+#for s in "flat10_zec" ;do
  if [ $s = "flat10" ]; then 
   S=002
  else
@@ -13,24 +13,47 @@ for s in "flat10_cdr" ;do
 
  ## HAMOCC
  # dissic talknat talk phosy dissicnat
-  hamocc_vars=( dissic talknat talk phosy dissicnat )
+  hamocc_vars=( po4 )
  ## MPIOM
  # thetao preformed_O2 preformed_PO4 preformed_DIC preformed_DICnat
-  mpiom_vars=(  thetao preformed_O2 preformed_PO4 preformed_DIC preformed_DICnat )
+  mpiom_vars=( ) 
 
-  # HAMOCC, 3d_mm
+  # HAMOCC, 3d_ym
  for V in "${hamocc_vars[@]}" ;do
-  for year in $(seq 1850 2249); do
-   A=${s}_${S}_hamocc_data_3d_mm_${year}0101_${year}1231.nc
+  for year in $(seq 1850 2299); do
+   A=${s}_${S}_hamocc_data_3d_ym_${year}0101_${year}1231.nc
    cdo -s -selname,${V} ${dir1}/hamocc/${A} ${dir0}/${V}_${s}_${year}.nc
    cdo -s -f nc -remapbil,r192x96 -selindexbox,2,257,2,221 ${dir0}/${V}_${s}_${year}.nc ${dir0}/${V}_${s}_r192x96_${year}.nc
    echo "Processed ${V}_${s}_r192x96_${year}.nc"
-   rm -f ${dir0}/${V}_${s}_${year}.nc
+   #rm -f ${dir0}/${V}_${s}_${year}.nc
   done
 
+  cdo -s -mergetime ${dir0}/${V}_${s}_r192x96_????.nc ${dir0}/${V}_${s}_r192x96_1850-2299.nc
+  rm -f ${dir0}/${V}_${s}_r192x96_????.nc
+#
+  for lon in 340 190 70 ; do
+    R=${dir0}/${V}_${s}_r192x96_1850-2299.nc
+    L=${dir0}/${V}_${s}_r192x96_1850-2299_lon_${lon}.nc
+    west=$(($lon - 1))
+    east=$(($lon + 1))
+   cdo -s -sellonlatbox,${west},${east},-90,90 ${R} ${L}
+   echo "Processed ${V}_${s}_r192x96_1850-2299_lon_${lon}.nc"
+  done
+ done
+
+  # HAMOCC, 3d_mm
+# for V in "${hamocc_vars[@]}" ;do
+#  for year in $(seq 2217 2299); do
+#   A=${s}_${S}_hamocc_data_3d_mm_${year}0101_${year}1231.nc
+#   cdo -s -selname,${V} ${dir1}/hamocc/${A} ${dir0}/${V}_${s}_${year}.nc
+#   cdo -s -f nc -remapbil,r192x96 -selindexbox,2,257,2,221 ${dir0}/${V}_${s}_${year}.nc ${dir0}/${V}_${s}_r192x96_${year}.nc
+#   echo "Processed ${V}_${s}_r192x96_${year}.nc"
+#   #rm -f ${dir0}/${V}_${s}_${year}.nc
+#  done
+#
 #  cdo -s -mergetime ${dir0}/${V}_${s}_r192x96_????.nc ${dir0}/${V}_${s}_r192x96_1850-2299.nc
 #  rm -f ${dir0}/${V}_${s}_r192x96_????.nc
-
+##
 #  for lon in 340 190 70 ; do
 #    R=${dir0}/${V}_${s}_r192x96_1850-2299.nc
 #    L=${dir0}/${V}_${s}_r192x96_1850-2299_lon_${lon}.nc
@@ -39,29 +62,29 @@ for s in "flat10_cdr" ;do
 #   cdo -s -sellonlatbox,${west},${east},-90,90 ${R} ${L}
 #   echo "Processed ${V}_${s}_r192x96_1850-2299_lon_${lon}.nc"
 #  done
- done
+# done
 
   # MPIOM, 3d_mm
 
  for V in "${mpiom_vars[@]}" ;do
-  for year in $(seq 1850 2249); do
+  for year in $(seq 2217 2299); do
    A=${s}_${S}_mpiom_data_3d_mm_${year}0101_${year}1231.nc
    cdo -s -selname,${V} ${dir1}/mpiom/${A} ${dir0}/${V}_${s}_${year}.nc
    cdo -s -f nc -remapbil,r192x96 -selindexbox,2,257,2,221 ${dir0}/${V}_${s}_${year}.nc ${dir0}/${V}_${s}_r192x96_${year}.nc
    echo "Processed ${V}_${s}_r192x96_${year}.nc"
-   rm -f ${dir0}/${V}_${s}_${year}.nc
+  # rm -f ${dir0}/${V}_${s}_${year}.nc
   done
 
-#  cdo -s -mergetime ${dir0}/${V}_${s}_r192x96_????.nc ${dir0}/${V}_${s}_r192x96_1850-2299.nc
-#  rm -f ${dir0}/${V}_${s}_r192x96_????.nc
-
-#  for lon in 340 190 70 ; do
-#    R=${dir0}/${V}_${s}_r192x96_1850-2299.nc
-#    L=${dir0}/${V}_${s}_r192x96_1850-2299_lon_${lon}.nc
-#    west=$(($lon - 1))
-#    east=$(($lon + 1))
-#   cdo -s -sellonlatbox,${west},${east},-90,90 ${R} ${L}
-#   echo "Processed ${V}_${s}_r192x96_1850-2299_lon_${lon}.nc"
-#  done
+  cdo -s -mergetime ${dir0}/${V}_${s}_r192x96_????.nc ${dir0}/${V}_${s}_r192x96_1850-2299.nc
+  rm -f ${dir0}/${V}_${s}_r192x96_????.nc
+#
+  for lon in 340 190 70 ; do
+    R=${dir0}/${V}_${s}_r192x96_1850-2299.nc
+    L=${dir0}/${V}_${s}_r192x96_1850-2299_lon_${lon}.nc
+    west=$(($lon - 1))
+    east=$(($lon + 1))
+    cdo -s -sellonlatbox,${west},${east},-90,90 ${R} ${L}
+   echo "Processed ${V}_${s}_r192x96_1850-2299_lon_${lon}.nc"
+  done
  done
 done

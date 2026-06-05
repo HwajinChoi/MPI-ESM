@@ -1,0 +1,886 @@
+mo_jsbach_lctlib.f90:     REAL(dp), POINTER :: specificLeafArea_C(:)    !! Carbon content per leaf area in [mol(Carbon)/m^2(leaf)]
+mo_jsbach_lctlib.f90:     ! --- Parameters used in the carbon balance model -----------------------------------------------------------------------------
+mo_jsbach_lctlib.f90:     REAL(dp), POINTER :: frac_npp_2_woodPool(:)   !! Maximum fraction of NPP put into the wood pool of the carbon balance model
+mo_jsbach_lctlib.f90:     REAL(dp), POINTER :: frac_npp_2_reservePool(:)!! Optimal fraction of NPP put into the reserve pool of the carbon balance model
+mo_jsbach_lctlib.f90:     REAL(dp), POINTER :: frac_npp_2_exudates(:)   !! Optimal fraction of NPP put into the root exudates of the carbon balance model
+mo_jsbach_lctlib.f90:     REAL(dp), POINTER :: Max_C_content_woods(:)   !! Maximum carbon content in the woody parts of plants [mol(C)/m^2(canopy)] (for
+mo_jsbach_lctlib.f90:     REAL(dp), POINTER :: frac_harv_C_2_paper(:)   !! Fraction of harvested carbon to paper (intermediate longlived) pool
+mo_jsbach_lctlib.f90:     REAL(dp), POINTER :: frac_harv_C_2_construction(:) !! Fraction of harvested carbon to constructions (e.g. houses, furniture 
+mo_jsbach_lctlib.f90:     REAL(dp), POINTER :: frac_lcc_C_2_paper(:)         !! Fraction of carbon affected by land cover change to paper (intermediately 
+mo_jsbach_lctlib.f90:     REAL(dp), POINTER :: frac_lcc_C_2_construction(:)  !! Fract of carbon affected by land cover change to constructions (e.g. 
+mo_jsbach_lctlib.f90:     ! --- Parameters used in the carbon balance model and the dynamic vegetation --------------------------------------------------
+mo_jsbach_lctlib.f90:     ! --- Parameters used by the yasso soil carbon model -------------------------------------------------------------------------
+mo_jsbach_lctlib.f90:          CASE ('specificleafarea_c')                                  ! Carbon content per leaf area for LoGro-P
+mo_jsbach_lctlib.f90:          CASE ('max_c_content_woods')                          ! Maximum carbon content of wood pool (see cbalance)
+mo_jsbach_lctlib.f90:          CASE ('frac_harv_c_2_paper')                          ! PFT-specific fraction of harvested carbon to paper pool
+mo_jsbach_lctlib.f90:          CASE ('frac_harv_c_2_construction')                   ! PFT-specific fraction of harvested carbon to construction pool
+mo_jsbach_lctlib.f90:          CASE ('frac_lcc_c_2_paper')                           ! PFT-specific fraction of carbon affected by lcc to paper pool
+mo_jsbach_lctlib.f90:          CASE ('frac_lcc_c_2_construction')                    ! PFT-specific fraction of carbon affected by lcc to construct. pool
+mo_jsbach_lctlib.f90:                ! DSG: this check is important, if values don't add up to 1 carbon is not conserved
+mo_jsbach_lctlib.f90:                ! DSG: this check is important, if values dont add up to 1 carbon is not conserved
+mo_jsbach_lctlib.f90:                ! DSG: this check is important, if values dont add up to 1 carbon is not conserved
+mo_dynveg.f90:  USE mo_disturbance,      ONLY: disturbance, disturbed_frac, DIST_FIRE, DIST_WINDBREAK, relocate_disturbed_carbon, &
+mo_dynveg.f90:             longname='Second test for carbon conservation in dynveg (should be zero)', &
+mo_dynveg.f90:             longname='First test for carbon conservation in dynveg (should be zero)', &
+mo_dynveg.f90:             longname='First test for carbon conservation in dynveg (should be zero)', &
+mo_dynveg.f90:    USE mo_cbal_cpools,      ONLY: relocate_CarbonAndNitrogen, relocate_carbon_desert
+mo_dynveg.f90:    LOGICAL,         INTENT(in) :: with_anthro_pools         ! run with anthorpogenic carbon pools (lcc_scheme == 2)
+mo_dynveg.f90:    LOGICAL, OPTIONAL, INTENT(in) :: cbalone_flag     ! indicates runs with the carbon offline model  
+mo_dynveg.f90:    REAL(dp)   :: Cpool_onSite(nidx)                  ! local arrays of anthopogenic carbon pools [mol(C)/m2(veg)]
+mo_dynveg.f90:    REAL(dp)   :: Cpool_paper(nidx)                   !    to avoid duplication of calls to relocate_carbon_desert
+mo_dynveg.f90:          ! -- initialize first carbon conservation test
+mo_dynveg.f90:          ! -- relocate carbon accouting for the change in the cover fraction of each PFT
+mo_dynveg.f90:          ! define local arrays to avoid quadruplication of calls to relocate_carbon_desert for runs with and without 
+mo_dynveg.f90:                CALL relocate_CarbonAndNitrogen(lctlib, surf, cover_fract_old(:,:), surf%cover_fract(kidx0:kidx1,:), &
+mo_dynveg.f90:                CALL relocate_carbon_desert(nidx, ntiles, surf%is_present(kidx0:kidx1,:), surf%is_glacier(kidx0:kidx1,:), &
+mo_dynveg.f90:                CALL relocate_CarbonAndNitrogen(lctlib, surf, cover_fract_old(:,:), surf%cover_fract(kidx0:kidx1,:), &
+mo_dynveg.f90:                ! -- scaling cpools to account for change in vegetated fraction in order to conserve the total mass of carbon
+mo_dynveg.f90:                CALL relocate_carbon_desert(nidx, ntiles, surf%is_present(kidx0:kidx1,:), surf%is_glacier(kidx0:kidx1,:), &
+mo_dynveg.f90:                CALL relocate_CarbonAndNitrogen(lctlib, surf, cover_fract_old(:,:),            &
+mo_dynveg.f90:                CALL relocate_carbon_desert(nidx, ntiles, surf%is_present(kidx0:kidx1,:),                     &
+mo_dynveg.f90:                ! -- relocate carbon accouting for the change in the cover fraction of each PFT
+mo_dynveg.f90:                CALL relocate_CarbonAndNitrogen(lctlib, surf, cover_fract_old(:,:),        &
+mo_dynveg.f90:                ! -- scaling cpools to account for change in vegetated fraction in order to conserve the total mass of carbon
+mo_dynveg.f90:                CALL relocate_carbon_desert(nidx, ntiles, surf%is_present(kidx0:kidx1,:), surf%is_glacier(kidx0:kidx1,:), &
+mo_dynveg.f90:          ! -- finish carbon conservation test
+mo_dynveg.f90:       ! -- Save FPC-fractions from past time step (day) for consistent carbon relocation
+mo_dynveg.f90:         ! -- initialize second carbon conservation test
+mo_dynveg.f90:         ! Attention: the routine relocate_disturbed_carbon updates flux variables of disturbance type, although these are not 
+mo_dynveg.f90:         ! -- changes in carbon pools caused by wind break (to be called before the routine relocate_carbon_fire)
+mo_dynveg.f90:         CALL relocate_disturbed_carbon(lctlib, surf, nidx, kidx0, kidx1, ntiles,                          &
+mo_dynveg.f90:         CALL relocate_disturbed_carbon(lctlib, surf, nidx, kidx0, kidx1, ntiles,                          &
+mo_dynveg.f90:         ! -- finish third carbon conservation test
+mo_dynveg.f90:                 - disturbance%carbon_2_atmos(kidx0:kidx1)                                                 &
+mo_dynveg.f90:         disturbance%carbon_2_GreenLitterPools(kidx0:kidx1) = disturbance%carbon_2_GreenLitterPools(kidx0:kidx1) * &
+mo_dynveg.f90:         disturbance%carbon_2_WoodLitterPools(kidx0:kidx1)  = disturbance%carbon_2_WoodLitterPools(kidx0:kidx1)  * &
+mo_dynveg.f90:         disturbance%carbon_2_atmos(kidx0:kidx1) = disturbance%carbon_2_atmos(kidx0:kidx1) * surf%veg_ratio_max(kidx0:kidx1)
+mo_dynveg.f90:                                                       + disturbance%carbon_2_atmos(kidx0:kidx1) * molarMassCO2_kg
+mo_dynveg.f90:                                                               + disturbance%carbon_2_atmos_tiled(kidx0:kidx1,:) * molarMassC_kg &
+mo_dynveg.f90:       CO2_emission(:) = disturbance%carbon_2_atmos(kidx0:kidx1) * molarMassCO2_kg/86400._dp
+mo_cbal_landcover_change.f90:     real(dp),pointer :: LCC_flux_box_C2atmos(:)            !! Carbon flux to atmosphere from landcover change
+mo_cbal_landcover_change.f90:     real(dp),pointer :: LCC_flux_box_C2litterGreenPools(:) !! Carbon flux from green and reserve pool to fast soil pool by lcc
+mo_cbal_landcover_change.f90:     real(dp),pointer :: LCC_flux_box_C2litterWoodPool(:)   !! Carbon flux from wood pool to woody litter pool by lcc
+mo_cbal_landcover_change.f90:     real(dp),pointer :: LCC_testCconserv(:)                !! For testing carbon conservation (should be zero if conserved)
+mo_cbal_landcover_change.f90:     real(dp),pointer :: C2atmos(:)                         !! Carbon flux to atmosphere from land cover change
+mo_cbal_landcover_change.f90:     real(dp),pointer :: N2atmos(:)                         !! Carbon flux to atmosphere from land cover change
+mo_cbal_landcover_change.f90:     real(dp),pointer :: C_2_onSite(:)                      !! Carbon flux from LCC to onsite
+mo_cbal_landcover_change.f90:     real(dp),pointer :: C_2_paper(:)                       !! Carbon flux from LCC to paper
+mo_cbal_landcover_change.f90:     real(dp),pointer :: C_2_construction(:)                !! Carbon flux from LCC to construction
+mo_cbal_landcover_change.f90:     real(dp),pointer :: C_2_onSite_harv(:)                 !! Carbon flux from LCC to onsite from harvest
+mo_cbal_landcover_change.f90:     real(dp),pointer :: C_2_paper_harv(:)                  !! Carbon flux from LCC to paper from harvest
+mo_cbal_landcover_change.f90:     real(dp),pointer :: C_2_construction_harv(:)           !! Carbon flux from LCC to construction from harvest
+mo_cbal_landcover_change.f90:     real(dp),pointer :: C_onSite_2_atmos(:)                !! Carbon flux from onSite to atmosphere
+mo_cbal_landcover_change.f90:     real(dp),pointer :: C_paper_2_atmos(:)                 !! Carbon flux from paper to atmosphere
+mo_cbal_landcover_change.f90:     real(dp),pointer :: C_construction_2_atmos(:)          !! Carbon flux from construction to atmosphere
+mo_cbal_landcover_change.f90:     real(dp),pointer :: C_onSite_harv_2_atmos(:)           !! Carbon flux from onSite to atmosphere from harvest
+mo_cbal_landcover_change.f90:     real(dp),pointer :: C_paper_harv_2_atmos(:)            !! Carbon flux from paper to atmosphere from harvest
+mo_cbal_landcover_change.f90:     real(dp),pointer :: C_construction_harv_2_atmos(:)     !! Carbon flux from construction to atmosphere from harvest
+mo_cbal_landcover_change.f90:     real(dp),pointer :: boxC_2_onSite(:)                  !! Carbon flux from LCC to onsite green
+mo_cbal_landcover_change.f90:     real(dp),pointer :: boxC_2_paper(:)                   !! Carbon flux from LCC to paper
+mo_cbal_landcover_change.f90:     real(dp),pointer :: boxC_2_construction(:)            !! Carbon flux from LCC to construction
+mo_cbal_landcover_change.f90:     real(dp),pointer :: boxC_2_onSite_harv(:)             !! Carbon flux from LCC to onsite green from harvest
+mo_cbal_landcover_change.f90:     real(dp),pointer :: boxC_2_paper_harv(:)              !! Carbon flux from LCC to paper from harvest
+mo_cbal_landcover_change.f90:     real(dp),pointer :: boxC_2_construction_harv(:)       !! Carbon flux from LCC to construction from harvest
+mo_cbal_landcover_change.f90:     real(dp),pointer :: boxC_onSite_2_atmos(:)            !! Carbon flux from onSite to atmosphere
+mo_cbal_landcover_change.f90:     real(dp),pointer :: boxC_paper_2_atmos(:)             !! Carbon flux from paper to atmosphere
+mo_cbal_landcover_change.f90:     real(dp),pointer :: boxC_construction_2_atmos(:)      !! Carbon flux from construction to atmosphere
+mo_cbal_landcover_change.f90:     real(dp),pointer :: boxC_onSite_harv_2_atmos(:)       !! Carbon flux from onSite to atmosphere from harvest
+mo_cbal_landcover_change.f90:     real(dp),pointer :: boxC_paper_harv_2_atmos(:)        !! Carbon flux from paper to atmosphere from harvest
+mo_cbal_landcover_change.f90:     real(dp),pointer :: boxC_construction_harv_2_atmos(:) !! Carbon flux from construction to atmosphere from harvest
+mo_cbal_landcover_change.f90:     real(dp),pointer :: C2atmos_LUtrans(:)         !! Carbon flux to atmosphere from land use change
+mo_cbal_landcover_change.f90:     real(dp),pointer :: C2atmos_harvest(:)         !! Carbon flux to atmosphere from harvest
+mo_cbal_landcover_change.f90:             longname="Carbon flux to atmosphere from land cover/land use change",                            &
+mo_cbal_landcover_change.f90:             longname="Flux of green and reserve carbon relocated by landcover change to the two green litter pools", &
+mo_cbal_landcover_change.f90:             longname="Wood carbon relocated by landcover change to woody litter pool",                       &
+mo_cbal_landcover_change.f90:             longname="For testing carbon conservation (should be zero if conserved)",                        &
+mo_cbal_landcover_change.f90:                longname="Carbon flux to atmosphere from land use change per time step",                          &
+mo_cbal_landcover_change.f90:                longname="Carbon flux to atmosphere from harvest per time step",                                  &
+mo_cbal_landcover_change.f90:                longname="Carbon flux to atmosphere from land cover change per time step",                        &
+mo_cbal_landcover_change.f90:                longname='Carbon flux from living plants to ground pool from land use change',code=224,          &
+mo_cbal_landcover_change.f90:                longname='Wood carbon flux from living plants to short/intermediate term anthropogenic pool from land use change', &
+mo_cbal_landcover_change.f90:                longname='Wood carbon flux from living plants to long term anthropogenic pool from land use change',code=227,      &
+mo_cbal_landcover_change.f90:                longname='Carbon flux from living plants to ground pool from land use change',code=228,                      &
+mo_cbal_landcover_change.f90:                longname='Wood carbon flux from living plants to short/intermediate term anthropogenic pool from land use change', &
+mo_cbal_landcover_change.f90:                longname='Wood carbon flux from living plants to long term anthropogenic pool from land use change',code=231,    &
+mo_cbal_landcover_change.f90:                longname='Carbon flux ground pool from land use change to atmosphere',code=232,                              &
+mo_cbal_landcover_change.f90:                longname='Carbon flux from short/intermediate term anthropogenic pool from land use change to atmos',              &
+mo_cbal_landcover_change.f90:                longname='Carbon flux from long term anthropogenic pool from land use change to atmos',code=235,                   &
+mo_cbal_landcover_change.f90:                longname='Carbon flux from ground pool from land use change to atmos',code=236,         &
+mo_cbal_landcover_change.f90:                longname='Carbon flux from short/intermediate term anthropogenic pool from land use change to atmos',            &
+mo_cbal_landcover_change.f90:                longname='Carbon flux from long term anthropogenic pool from land use change to atmos',code=239,&
+mo_cbal_landcover_change.f90:                   'Wood carbon flux from living plants to short term anthropogenic pool from harvest',                         &
+mo_cbal_landcover_change.f90:                   'Wood carbon flux from living plants to intermediate term anthropogenic pool from harvest',            &
+mo_cbal_landcover_change.f90:                   ,longname='Wood carbon flux from living plants to long term anthropogenic pool from harvest',code=241,       &
+mo_cbal_landcover_change.f90:                   longname='Wood carbon flux from living plants to short term anthropogenic pool from harvest',                &
+mo_cbal_landcover_change.f90:                   longname='Wood carbon flux from living plants to intermediate term anthropogenic pool from harvest',   &
+mo_cbal_landcover_change.f90:                   longname='Wood carbon flux from living plants to long term anthropogenic pool from harvest',  &
+mo_cbal_landcover_change.f90:                   longname = 'Carbon flux from short term anthropogenic pool from harvest to atmos',                           &
+mo_cbal_landcover_change.f90:                   longname = 'Carbon flux from intermediate term anthropogenic pool from harvest to atmos',              &
+mo_cbal_landcover_change.f90:                   units='mol(C) m-2(veg) s-1', longname='Carbon flux from long term anthropogenic pool from harvest to atmos', &
+mo_cbal_landcover_change.f90:                   longname='Carbon flux short term anthropogenic pool from harvest to atmos',                                  &
+mo_cbal_landcover_change.f90:                   longname='Carbon flux intermediate term anthropogenic pool from harvest to atmos',                     &
+mo_cbal_landcover_change.f90:                   longname='Carbon flux from long term anthropogenic pool from harvest to atmos',                         &
+mo_cbal_landcover_change.f90:  !!    2. Performs the necessary changes in the carbon pools that go along
+mo_cbal_landcover_change.f90:  !! to derive the changes in the carbon pools
+mo_cbal_landcover_change.f90:    use mo_cbal_cpools,      only: relocate_CarbonAndNitrogen
+mo_cbal_landcover_change.f90:    type(cbalance_type),      intent(inout) :: cbalance                     !! the carbon pools that will be changed in this call
+mo_cbal_landcover_change.f90:    !! --- Initialize Carbon and Nitrogen conservation tests
+mo_cbal_landcover_change.f90:    !! --- Do the changes in the carbon pools and compute amount of carbon to be released to atmosphere
+mo_cbal_landcover_change.f90:          CALL relocate_CarbonAndNitrogen (lctlib, surface, landcover_fract_current(1:nidx,1:ntiles), &
+mo_cbal_landcover_change.f90:          CALL relocate_CarbonAndNitrogen (lctlib, surface, landcover_fract_current(1:nidx,1:ntiles), &
+mo_cbal_landcover_change.f90:          CALL relocate_CarbonAndNitrogen (lctlib, surface, landcover_fract_current(1:nidx,1:ntiles), &
+mo_cbal_landcover_change.f90:          CALL relocate_CarbonAndNitrogen (lctlib, surface, landcover_fract_current(1:nidx,1:ntiles), &
+mo_cbal_landcover_change.f90:             CALL relocate_CarbonAndNitrogen(lctlib,surface,              &
+mo_cbal_landcover_change.f90:             CALL relocate_CarbonAndNitrogen(lctlib,surface,              &
+mo_cbal_landcover_change.f90:             CALL relocate_CarbonAndNitrogen(lctlib,surface,            &
+mo_cbal_landcover_change.f90:             CALL relocate_CarbonAndNitrogen(lctlib,surface,            &
+mo_cbal_landcover_change.f90:    !! --- Perform carbon and nitrogen conservation test
+mo_cbal_landcover_change.f90:    INTEGER,  INTENT(in)    :: lcc_scheme           !! 1: without, 2: with anthropogenic carbon pools
+mo_cbal_landcover_change.f90:    TYPE(cbalance_type),         INTENT(inout) :: cbalance      !! The carbon pools to be changed along with the LU-transitions
+mo_cbal_landcover_change.f90:    REAL(dp) :: C2litter_harvest(1:nidx)                   !! Carbon from harvest released to the below ground litter pools
+mo_cbal_landcover_change.f90:                                                           !! .. (more realsitically this carbon should be put into anthropogenic
+mo_cbal_landcover_change.f90:                                                           !! .. carbon is put into litter pools of similar lifetime)
+mo_cbal_landcover_change.f90:       !! --- Initialize Carbon conservation test
+mo_cbal_landcover_change.f90:    !! === Perform the carbon relocations associated with the landuse transitions === !!
+mo_cbal_landcover_change.f90:                         Carbon_2_onSite             = lcc%C_2_onSite_harv            (kstart:kend), &
+mo_cbal_landcover_change.f90:                         Carbon_2_paper              = lcc%C_2_paper_harv             (kstart:kend), &
+mo_cbal_landcover_change.f90:                         Carbon_2_construction       = lcc%C_2_construction_harv      (kstart:kend), &
+mo_cbal_landcover_change.f90:                         Carbon_onSite_2_atmos       = lcc%C_onSite_harv_2_atmos      (kstart:kend), &
+mo_cbal_landcover_change.f90:                         Carbon_paper_2_atmos        = lcc%C_paper_harv_2_atmos       (kstart:kend), &
+mo_cbal_landcover_change.f90:                         Carbon_construction_2_atmos = lcc%C_construction_harv_2_atmos(kstart:kend), &
+mo_cbal_landcover_change.f90:                         Carbon_2_onSite             = lcc%C_2_onSite_harv            (kstart:kend), &
+mo_cbal_landcover_change.f90:                         Carbon_2_paper              = lcc%C_2_paper_harv             (kstart:kend), &
+mo_cbal_landcover_change.f90:                         Carbon_2_construction       = lcc%C_2_construction_harv      (kstart:kend), &
+mo_cbal_landcover_change.f90:                         Carbon_onSite_2_atmos       = lcc%C_onSite_harv_2_atmos      (kstart:kend), &
+mo_cbal_landcover_change.f90:                         Carbon_paper_2_atmos        = lcc%C_paper_harv_2_atmos       (kstart:kend), &
+mo_cbal_landcover_change.f90:                         Carbon_construction_2_atmos = lcc%C_construction_harv_2_atmos(kstart:kend), &
+mo_cbal_landcover_change.f90:                         Carbon_2_onSite             = lcc%C_2_onSite_harv            (kstart:kend), &
+mo_cbal_landcover_change.f90:                         Carbon_2_paper              = lcc%C_2_paper_harv             (kstart:kend), &
+mo_cbal_landcover_change.f90:                         Carbon_2_construction       = lcc%C_2_construction_harv      (kstart:kend), &
+mo_cbal_landcover_change.f90:                         Carbon_onSite_2_atmos       = lcc%C_onsite_harv_2_atmos      (kstart:kend), &
+mo_cbal_landcover_change.f90:                         Carbon_paper_2_atmos        = lcc%C_paper_harv_2_atmos       (kstart:kend), &
+mo_cbal_landcover_change.f90:                         Carbon_construction_2_atmos = lcc%C_construction_harv_2_atmos(kstart:kend), &
+mo_cbal_landcover_change.f90:                         Carbon_2_onSite             = lcc%C_2_onSite_harv            (kstart:kend), &
+mo_cbal_landcover_change.f90:                         Carbon_2_paper              = lcc%C_2_paper_harv             (kstart:kend), &
+mo_cbal_landcover_change.f90:                         Carbon_2_construction       = lcc%C_2_construction_harv      (kstart:kend), &
+mo_cbal_landcover_change.f90:                         Carbon_onSite_2_atmos       = lcc%C_onSite_harv_2_atmos      (kstart:kend), &
+mo_cbal_landcover_change.f90:                         Carbon_paper_2_atmos        = lcc%C_paper_harv_2_atmos       (kstart:kend), &
+mo_cbal_landcover_change.f90:                         Carbon_construction_2_atmos = lcc%C_construction_harv_2_atmos(kstart:kend), &
+mo_cbal_landcover_change.f90:    !! --- Finish carbon conservation test
+mo_jsbach.f90:     LOGICAL      :: WithNitrogen           !! With nitrogen cycling? (in addition to carbon cycling) 
+mo_jsbach.f90:     LOGICAL      :: WithYasso              !! With yasso soil carbon model?
+mo_jsbach.f90:  LOGICAL, SAVE  :: debug_Cconservation         !! Produce additional output to debug carbon conservation
+mo_jsbach.f90:  LOGICAL, SAVE  :: test_Cconservation          !! Activate carbon conservation test
+mo_jsbach.f90:         CALL message('    ', 'The Yasso soil carbon model has been developed by the Finnish Environment Institute (SYKE).')
+Binary file mo_cbal_bethy.o matches
+Binary file mo_dynveg.o matches
+mo_phenology.f90:    REAL(dp),INTENT(in)           :: specLeafArea(:,:)         !! Specific leaf area in molar units [m^2(leaf)/mol(Carbon)]
+mo_land_surface.f90:    LOGICAL :: use_albedosoil     !! true: calculate albedo of soil surface denpending on soil carbon and litter
+mo_land_surface.f90:    LOGICAL :: use_albedosoilconst!! true: the base albedo of the soil surface (without soil carbon and leaf litter)
+mo_land_surface.f90:    CHARACTER(len=6)  :: use_soc  !! linear: albedo of the soil is linearly reduced by soil carbon
+mo_land_surface.f90:                                  !! log: logarithmic dependence of the albedo of the soil surface on soil carbon
+mo_land_surface.f90:         background_albedo_soil_vis_base, &         ! background albedo soil visible (without litter and soil carbon)
+mo_land_surface.f90:         background_albedo_soil_nir_base, &         ! background albedo soil NIR (without litter and soil carbon)
+mo_land_surface.f90:    LOGICAL, INTENT(in) :: with_yasso               ! flag to indicate the use of the YASSO soil carbon model
+mo_land_surface.f90:         Cpool_litter_green_ag                      ! leaf litter carbon [mol(C)/m2(canopy)]
+mo_land_surface.f90:         Cpool_slow                                 ! soil carbon [mol(C)/m2(canopy)]
+mo_land_surface.f90:    REAL(dp)  :: boxC_litter_green_ag_mixed(nidx,ntiles)  ! leaf litter carbon [mol(C)/m2(well mixed area)]
+mo_land_surface.f90:    REAL(dp)  :: boxC_slow_mixed(nidx,ntiles)             ! soil carbon [mol(C)/m2(well mixed area)]
+mo_land_surface.f90:    REAL(dp)  :: background_albedo_soil_vis(nidx,ntiles)  ! background albedo soil visible (including litter and soil carbon)
+mo_land_surface.f90:    REAL(dp)  :: background_albedo_soil_nir(nidx,ntiles)  ! background albedo soil NIR (including litter and soil carbon)
+mo_land_surface.f90:       ! calculate soil carbon and leaf litter carbon [mol(C)/m2(well mixed area)] 
+mo_land_surface.f90:       ! calculate albedo of the soil surface depending on soil carbon and leaf litter carbon
+mo_land_surface.f90:         boxC_litter_green_ag,   &                  ! leaf litter carbon [mol(C)/m2(glacier free grid box)]
+mo_land_surface.f90:         boxC_slow,              &                  ! soil carbon [mol(C)/m2(glacier free grid box)]
+mo_land_surface.f90:    ! parameters for albedo dependence on soil carbon (UseSOC)
+mo_land_surface.f90:    REAL(dp)  :: soil_carbon_sum(nidx)              ! soil carbon of all PFT [mol(C)/m2(glacier free grid box)]
+mo_land_surface.f90:    !!option: albedo depends on soil carbon content ...
+mo_land_surface.f90:    soil_carbon_sum(:) = 0.0_dp
+mo_land_surface.f90:    soil_carbon_sum(:) = SUM(boxC_slow(:,:), DIM=2)
+mo_land_surface.f90:                                    AlbedoSoilSOCVis * MIN(soil_carbon_sum(i),AlbedoSoilClimit)
+mo_land_surface.f90:                                    AlbedoSoilSOCNir * MIN(soil_carbon_sum(i),AlbedoSoilClimit)
+mo_land_surface.f90:                                    (6._dp + log(1._dp + soil_carbon_sum(i))),0.1_dp)
+mo_land_surface.f90:                                    (6._dp + log(1._dp + soil_carbon_sum(i))),0.2_dp)
+Binary file mo_disturbance_thonicke.o matches
+Binary file mo_cbalone_memory.o matches
+Binary file mo_cbalone_io.o matches
+mo_disturbance_thonicke.f90:REAL(dp), PARAMETER :: frac_1hr_wood_new     =     0.0_dp     ! frac of    1hr fuel in new carbon in woody litter pools
+mo_disturbance_thonicke.f90:REAL(dp), PARAMETER :: frac_10hr_wood_new    =     0.12_dp    ! frac of   10hr fuel in new carbon in woody litter pools
+mo_disturbance_thonicke.f90:REAL(dp), PARAMETER :: frac_100hr_wood_new   =     0.21_dp    ! frac of  100hr fuel in new carbon in woody litter pools
+mo_disturbance_thonicke.f90:REAL(dp), PARAMETER :: frac_1000hr_wood_new  =     0.67_dp    ! frac of 1000hr fuel in new carbon in woody litter pools
+mo_disturbance_thonicke.f90:  ! used in fuel_consumption and relocate_carbon_fire_thonicke  
+mo_disturbance_thonicke.f90:  REAL(dp), POINTER :: avg_carbon_2_atmos(:,:)
+mo_disturbance_thonicke.f90:PUBLIC  relocate_carbon_fire_thonicke
+mo_disturbance_thonicke.f90:                 fire_TH_diag%avg_carbon_2_atmos            (grid%nland,surface%ntiles), &
+mo_disturbance_thonicke.f90:        fire_TH_diag%avg_carbon_2_atmos            (:,:) = 0._dp
+mo_disturbance_thonicke.f90:      CALL add(IO_disturbance,'avg_carbon_2_atmos',fire_TH_diag%avg_carbon_2_atmos,&
+mo_disturbance_thonicke.f90:               longname='carbon emitted by fires',&
+mo_disturbance_thonicke.f90:              units='mol Carbon day-1 m-2 vegetated area',ldims=dim2p,gdims=dim2,dimnames=dim2n,code=74,&
+mo_disturbance_thonicke.f90:    CALL add(IO_veg,'burned_Cpool_reserve',state_FTH%burned_Cpool_reserve,longname='reserve pool carbon burned',                  &
+mo_disturbance_thonicke.f90:    CALL add(IO_veg,'burned_Cpool_wood',state_FTH%burned_Cpool_wood,longname='wood pool carbon burned',                           &
+mo_disturbance_thonicke.f90:  REAL(dp),           INTENT(in)    :: Cpool_green          (:,:) ! live green carbon pool
+mo_disturbance_thonicke.f90:  REAL(dp),           INTENT(in)    :: Cpool_woods          (:,:) ! live wood carbon pool
+mo_disturbance_thonicke.f90:  REAL(dp),           INTENT(in)    :: Cpool_reserve        (:,:) ! live reserve carbon pool
+mo_disturbance_thonicke.f90:  REAL(dp), OPTIONAL, INTENT(in)    :: Cpool_litter_green_ag(:,:) ! above ground green litter carbon pool [mol(C)/m2(canopy)]
+mo_disturbance_thonicke.f90:  REAL(dp), OPTIONAL, INTENT(in)    :: Cpool_litter_wood_ag (:,:) ! Value of wood litter carbon pool [mol(C)/m^2(canopy)]
+mo_disturbance_thonicke.f90:  REAL(dp) :: Cpool_litter_green_ag_g(nidx,ntiles)              ! above ground green litter carbon pool [g(C)/m2(canopy)]
+mo_disturbance_thonicke.f90:  REAL(dp) :: Cpool_litter_wood_ag_g(nidx,ntiles)               ! Value of wood litter carbon pool [g(C)/m^2(canopy)]
+mo_disturbance_thonicke.f90:  REAL(dp) :: Cpool_green_g(nidx,ntiles)                        ! live green carbon pool in [g(C)/m^2(canopy)]
+mo_disturbance_thonicke.f90:    ! convert carbon pools from mol to g
+mo_disturbance_thonicke.f90:    ! Divide carbon pools into fuel classes
+mo_disturbance_thonicke.f90:! transformation of combusted fuels to carbon pools
+mo_disturbance_thonicke.f90:  SUBROUTINE relocate_carbon_fire_thonicke(lctlib,surface,nidx,kidx0,ntiles,with_yasso,with_nitrogen,used_pft, &
+mo_disturbance_thonicke.f90:                                           carbon_2_GreenLitterPools,carbon_2_WoodLitterPools,      &
+mo_disturbance_thonicke.f90:                                           carbon_2_atmos_tiled_ext, carbon_2_atmos,                &
+mo_disturbance_thonicke.f90:  REAL(dp),                 INTENT(inout) :: Cpool_green(:,:)           ! green carbon pool [mol(C)/m2(canopy)]
+mo_disturbance_thonicke.f90:  REAL(dp),                 INTENT(inout) :: Cpool_woods(:,:)           ! wood carbon pool [mol(C)/m2(canopy)]
+mo_disturbance_thonicke.f90:  REAL(dp),                 INTENT(inout) :: Cpool_reserve(:,:)         ! reserve carbon pool [mol(C)/m2(canopy)]
+mo_disturbance_thonicke.f90:  REAL(dp),                 INTENT(inout) :: carbon_2_GreenLitterPools(:)  ! carbon to green litter pools[mol(C)/m2(vegetated area)]
+mo_disturbance_thonicke.f90:  REAL(dp),                 INTENT(inout) :: carbon_2_WoodLitterPools(:)   ! carbon to wood  litter pools[mol(C)/m2(vegetated area)]
+mo_disturbance_thonicke.f90:  REAL(dp), TARGET,         INTENT(inout) :: carbon_2_atmos_tiled_ext(:,:) ! C to atmosphere [mol(C)/m2(vegetated area)/timestep]
+mo_disturbance_thonicke.f90:  REAL(dp),                 INTENT(out)   :: carbon_2_atmos(:)             ! C to atmosphere [mol(C)/m2(vegetated area)/timestep]
+mo_disturbance_thonicke.f90:  REAL(dp),OPTIONAL,        INTENT(inout) :: Cpool_litter_green_ag(:,:) ! above ground green litter carbon pool [mol(C)/m2(canopy)]
+mo_disturbance_thonicke.f90:  REAL(dp),OPTIONAL,        INTENT(inout) :: Cpool_litter_green_bg(:,:) ! below ground green litter carbon pool [mol(C)/m2(canopy)]
+mo_disturbance_thonicke.f90:  REAL(dp),OPTIONAL,        INTENT(inout) :: Cpool_litter_wood_ag (:,:) ! wood litter carbon pool [mol(C)/m2(canopy)]
+mo_disturbance_thonicke.f90:  REAL(dp),OPTIONAL,        INTENT(inout) :: Cpool_litter_wood_bg (:,:) ! wood litter carbon pool [mol(C)/m2(canopy)]
+mo_disturbance_thonicke.f90:  REAL(dp), POINTER :: carbon_2_atmos_tiled_local(:,:), carbon_2_atmos_tiled(:,:)
+mo_disturbance_thonicke.f90:  REAL(dp) :: carbon_2_GreenLitterPools_tiled(nidx,ntiles)
+mo_disturbance_thonicke.f90:  REAL(dp) :: carbon_2_WoodLitterPools_tiled(nidx,ntiles)
+mo_disturbance_thonicke.f90:      carbon_2_atmos_tiled => carbon_2_atmos_tiled_ext
+mo_disturbance_thonicke.f90:      ALLOCATE(carbon_2_atmos_tiled_local(nidx,ntiles))
+mo_disturbance_thonicke.f90:      carbon_2_atmos_tiled => carbon_2_atmos_tiled_local
+mo_disturbance_thonicke.f90:    carbon_2_GreenLitterPools_tiled(:,:) = 0._dp
+mo_disturbance_thonicke.f90:    carbon_2_WoodLitterPools_tiled (:,:) = 0._dp
+mo_disturbance_thonicke.f90:    ! Total carbon and nitrogen which must be preserved
+mo_disturbance_thonicke.f90:    ! below ground carbon, same for woody and grass types, postfire_mortality=1 for grasses (initialisation)
+mo_disturbance_thonicke.f90:            ! carbon affected by fire and transferred into the wood litter pool - diagnostic needed for C conversion test in JSBACH
+mo_disturbance_thonicke.f90:            ! carbon transferred into the green litter pool above ground
+mo_disturbance_thonicke.f90:    carbon_2_GreenLitterPools_tiled(:,:) = green_2_litter_green_ag  (:,:) + green_2_litter_green_bg  (:,:)  &
+mo_disturbance_thonicke.f90:    carbon_2_WoodLitterPools_tiled(:,:)  = wood_2_litter_wood_ag    (:,:) + wood_2_litter_wood_bg    (:,:)
+mo_disturbance_thonicke.f90:    carbon_2_atmos_tiled(:,:) = state_FTH%burned_Cpool_litter_wood_ag (kidx0:kidx1,:) &
+mo_disturbance_thonicke.f90:    Cpool_woods  (:,:) = Cpool_woods  (:,:) - (carbon_2_WoodLitterPools_tiled(:,:) + state_FTH%burned_Cpool_wood(kidx0:kidx1,:))
+mo_disturbance_thonicke.f90:    carbon_2_atmos_tiled           (:,:) = carbon_2_atmos_tiled           (:,:) * veg_fract_correction(:,:) * cover_fract(:,:)
+mo_disturbance_thonicke.f90:    carbon_2_GreenLitterPools_tiled(:,:) = carbon_2_GreenLitterPools_tiled(:,:) * veg_fract_correction(:,:) * cover_fract(:,:)
+mo_disturbance_thonicke.f90:    carbon_2_WoodLitterPools_tiled (:,:) = carbon_2_WoodLitterPools_tiled (:,:) * veg_fract_correction(:,:) * cover_fract(:,:)
+mo_disturbance_thonicke.f90:    carbon_2_atmos            = SUM(carbon_2_atmos_tiled,           DIM=2)
+mo_disturbance_thonicke.f90:    carbon_2_GreenLitterPools = SUM(carbon_2_GreenLitterPools_tiled,DIM=2)
+mo_disturbance_thonicke.f90:    carbon_2_WoodLitterPools  = SUM(carbon_2_WoodLitterPools_tiled, DIM=2) 
+mo_disturbance_thonicke.f90:    ! Diagnose sum of carbon pools after relocate (without slow pool) for C mass balance check 
+mo_disturbance_thonicke.f90:      scale_fac(:,:) = (carbon_2_atmos_tiled(:,:) + cpools_total_af(:,:) - cpools_total_bf(:,:)) / cpools_total_bf(:,:)
+mo_disturbance_thonicke.f90:      WRITE(message_text,*) 'Carbon conservation in relocation rather low (',sum_scale_fac,')'
+mo_disturbance_thonicke.f90:      CALL message('relocate_carbon_fire_thonicke',TRIM(message_text))
+mo_disturbance_thonicke.f90:        CALL message('relocate_carbon_fire_thonicke',TRIM(message_text))
+mo_disturbance_thonicke.f90:      fire_TH_diag%avg_carbon_2_atmos(kidx0:kidx1,:) = fire_TH_diag%avg_carbon_2_atmos(kidx0:kidx1,:) &
+mo_disturbance_thonicke.f90:                                                     + secperday * carbon_2_atmos_tiled
+mo_disturbance_thonicke.f90:    IF (.NOT. fire_TH_options%ldiag) DEALLOCATE(carbon_2_atmos_tiled_local)
+mo_disturbance_thonicke.f90:  END SUBROUTINE relocate_carbon_fire_thonicke
+Binary file mo_disturbance.o matches
+Binary file mo_bethy.o matches
+Binary file mo_cbal_landcover_change.o matches
+mo_cbal_bethy.f90:     REAL(dp),POINTER :: NPP_flux_correction(:,:) !! Daily updated flux correction from yesterdays carbon balance 
+mo_cbal_bethy.f90:                                                  !!    carbon pools [mol(CO2)/m^2(canopy) s]
+mo_cbal_bethy.f90:     REAL(dp),POINTER :: Cpool_onSite(:)          !! Carbon left on the ground by landcover changes
+mo_cbal_bethy.f90:     REAL(dp),POINTER :: Cpool_paper(:)             !! Carbon stored in short/intermediate term anthro pool from landcover changes
+mo_cbal_bethy.f90:     REAL(dp),POINTER :: Cpool_construction(:)      !! Carbon stored in long term anthro pool from landcover changes
+mo_cbal_bethy.f90:     REAL(dp),POINTER :: Cpool_onSite_harvest(:)    !! Carbon left on the ground by harvest
+mo_cbal_bethy.f90:     REAL(dp),POINTER :: Cpool_paper_harvest(:)     !! Carbon stored in short/intermediate term anthro pool from harvest
+mo_cbal_bethy.f90:     REAL(dp),POINTER :: Cpool_construction_harvest(:) !! Carbon stored in long term anthro pool from harvest
+mo_cbal_bethy.f90:                                                      !! yasso above ground carbon pools in kg and relative to grid box area
+mo_cbal_bethy.f90:                                                      !! yasso below ground carbon pools in kg and relative to grid box area
+mo_cbal_bethy.f90:                                                      !! yasso below ground carbon pools in kg and relative to grid box area
+mo_cbal_bethy.f90:     REAL(dp),POINTER :: litter_flux(:,:)             !! Carbon flux from the vegetation to the litter pools [mol(C)/m^2(canopy) s]
+mo_cbal_bethy.f90:     REAL(dp),POINTER :: box_Cpools_total(:)          !! Sum of all carbon pools [mol(C)/m^2(grid box)]
+mo_cbal_bethy.f90:     REAL(dp),POINTER :: box_Cpools_total_old(:)      !! Array needed for carbon conservation test
+mo_cbal_bethy.f90:     REAL(dp),POINTER :: box_Cpools_total_old2(:)     !! Array needed for carbon conservation test
+mo_cbal_bethy.f90:     REAL(dp),POINTER :: testCconserv(:,:)            !! Array for testing carbon mass conservation (output should be zero)
+mo_cbal_bethy.f90:     REAL(dp),POINTER :: jsbachCconserv(:)            !! Array to test carbon conservation of jsbach (should be zero)
+mo_cbal_bethy.f90:     REAL(dp),POINTER :: CO2_fluxes_accu(:)           !! Array needed for carbon conservation test
+mo_cbal_bethy.f90:     REAL(dp),POINTER :: boxC_onSite(:)               !! Carbon left on the ground by lcc
+mo_cbal_bethy.f90:     REAL(dp),POINTER :: boxC_paper(:)                !! Carbon stored in short/intermediate term anthro pool by lcc
+mo_cbal_bethy.f90:     REAL(dp),POINTER :: boxC_construction(:)         !! Carbon stored in long term anthro pool by lcc
+mo_cbal_bethy.f90:     REAL(dp),POINTER :: boxC_onSite_harvest(:)       !! Carbon left on the ground from harvest
+mo_cbal_bethy.f90:     REAL(dp),POINTER :: boxC_paper_harvest(:)        !! Carbon stored in short/intermediate term anthro pool from harvest
+mo_cbal_bethy.f90:     REAL(dp),POINTER :: boxC_construction_harvest(:) !! Carbon stored in long term anthro pool from harvest
+mo_cbal_bethy.f90:    LOGICAL,            INTENT(in)     :: with_nitrogen!! If .TRUE. initialise also for cycling of Nitrogen in addition to Carbon 
+mo_cbal_bethy.f90:                       ' Initial values for the carbon pools will be taken from file '//TRIM(cpool_file_name))
+mo_cbal_bethy.f90:          CALL message('init_cbalance_bethy',' Carbon pools will be initialized with default values.')
+mo_cbal_bethy.f90:             CALL message('init_cbalance_bethy',' Nitrogen pools are initialized consistent with carbon pools.')
+mo_cbal_bethy.f90:             longname='NPP that could not be not stored in vegetation carbon pools',   units='mol(CO2) m-2(canopy) s-1',&
+mo_cbal_bethy.f90:                longname='Carbon left on ground from land use change',code=212,                               &
+mo_cbal_bethy.f90:                longname='Wood carbon in short/intermediate term anthropogenic pool from land use change',    &
+mo_cbal_bethy.f90:                longname='Wood carbon in long term anthropogenic pool from land use change',code=215,         &
+mo_cbal_bethy.f90:                   longname='Carbon left on ground from harvest',code=219,                                       &
+mo_cbal_bethy.f90:                   longname='Wood carbon in short/intermediate term anthropogenic pool from harvest',code=216,   &
+mo_cbal_bethy.f90:                   units='mol(C) m-2(veg)', longname='Wood carbon in long term anthropogenic pool from harvest', &
+mo_cbal_bethy.f90:             longname='Carbon flux from herbivory to the atmsphere', units='mol(C) m-2(grid box) s-1',      &
+mo_cbal_bethy.f90:             longname='Carbon flux from crops to crop harvest pool', units='mol(C) m-2(grid box) s-1',      &
+mo_cbal_bethy.f90:             longname='Carbon flux from crop harvest pool to the atmsphere', units='mol(C) m-2(grid box) s-1', &
+mo_cbal_bethy.f90:             longname='Sum of carbon from all carbon pools',   units='mol(CO2) m-2(grid box)',              &
+mo_cbal_bethy.f90:             longname='For testing conservation of carbon mass: should be zero.',   units='mol(CO2) m-2(canopy) day-1',&
+mo_cbal_bethy.f90:             longname='jsbach carbon conservation test: should be zero.',   units='mol(CO2) m-2(grid box)', &
+mo_cbal_bethy.f90:             longname='array needed for carbon conservation test', units='mol(CO2) m-2(grid box)', lpost=.FALSE., &
+mo_cbal_bethy.f90:             longname='array needed for carbon conservation test', units='mol(CO2) m-2(grid box)', lpost=.FALSE., &
+mo_cbal_bethy.f90:                units='mol(C) m-2(grid box)', longname='Carbon left on ground from land use change', code=218,      &
+mo_cbal_bethy.f90:                longname='Wood carbon in short/intermediate term anthropogenic pool from land use change',          &
+mo_cbal_bethy.f90:                longname='Wood carbon in long term anthropogenic pool from land use change', code=221,              &
+mo_cbal_bethy.f90:                   units='mol(C)m-2(grid box)', longname='Carbon left on ground from harvest',                        &
+mo_cbal_bethy.f90:                   longname='Wood carbon in short/intermediate term anthropogenic pool from harvest', code=222,       &
+mo_cbal_bethy.f90:                   units='mol(C) m-2(grid box)', longname='Wood carbon in long term anthropogenic pool from harvest', &
+mo_cbal_bethy.f90:       CALL message('init_cbalance_bethy','Reading initial carbon pools from file')
+mo_cbal_bethy.f90:          !! --- Get Yasso water-soluble carbon pools
+mo_cbal_bethy.f90:          !! --- Get Yasso ethanol-soluble carbon pools
+mo_cbal_bethy.f90:          !! --- Get Yasso nonsoluble carbon pools
+mo_cbal_bethy.f90:          !! --- Get Yasso humus carbon pool
+mo_cbal_bethy.f90:          !! --- Get Yasso acid-soluble carbon pools
+mo_cbal_bethy.f90:          !! --- Get Yasso water-soluble carbon pools
+mo_cbal_bethy.f90:          !! --- Get Yasso ethanol-soluble carbon pools
+mo_cbal_bethy.f90:          !! --- Get Yasso nonsoluble carbon pools
+mo_cbal_bethy.f90:          !! --- Get Yasso humus carbon pool
+mo_cbal_bethy.f90:          !! --- Get slow carbon pool
+mo_cbal_bethy.f90:    ELSE !! Default initialization of cbalance carbon pools
+mo_cbal_bethy.f90:       CALL message('init_cbalance_bethy','Carbon pools initialized with default values')
+mo_cbal_bethy.f90:          !! if not read from file, initialize yasso carbon pools with zero
+mo_cbal_bethy.f90:          CALL message('init_cbalance_bethy','All Yasso Carbon Pools set to 0 mol(C)/m^2 !!!')
+mo_cbal_bethy.f90:    LOGICAL,                INTENT(in)    :: with_nitrogen !! If .true. Nitrogen will be cycled in addition to carbon
+mo_cbal_bethy.f90:    ELSE ! A new day begins ==> perform carbon balance -------------------------------------------------------------------
+mo_cbal_bethy.f90:      !! Prepare for test of Carbon conservation across update Cpools by remembering the sum of the Carbon pools
+mo_cbal_bethy.f90:         ! update of carbon and nitrogen pools and compute soil respiration rate
+mo_cbal_bethy.f90:      ELSE !! carbon-only mode
+mo_cbal_bethy.f90:      !! Update Carbon and Nitrogen conservation test (should be zero if everything is correct, except for green litter pool)
+mo_cbal_bethy.f90:            + cbalance%soil_respiration(kidx0:kidx1,:)      * 86400._dp  & !!    minus carbon lost to atmosph.
+mo_cbal_bethy.f90:      ! Compute carbon contents per grid box area by weighting pools with fractions of grid box covered by vegetation 
+mo_cbal_bethy.f90:   ! Note: carbon loss of biosphere means a positive CO2 flux to atmosphere (i.e. NEP and net CO2-flux have opposite signs)
+mo_cbal_bethy.f90:   ! The carbon conservation test in check_Cconservation is based on yDayMean Fluxes. It cannot cope with the current
+mo_cbal_bethy.f90:  ! where "cCost" are the relative costs (measured in carbon) to produce 1 unit of carbon. Entering this into (1) one thus finds
+mo_cbal_bethy.f90:    REAL(dp), parameter :: cCost                  = 1.25_dp      ! relative costs (measured in carbon) to produce 1 unit of carbon
+mo_cbal_bethy.f90:    ! sum up all natural carbon pools (i.e. C pools with tiles dimension)
+mo_cbal_bethy.f90:    ! Routine to check the carbon conservation within jsbach. There is a time 
+mo_cbal_bethy.f90:    ! mismatch between the calculation of carbon fluxes and the update
+mo_cbal_bethy.f90:    ! of the carbon pools.
+mo_cbal_bethy.f90:    ! They thus correspond to the change in the carbon pools from the day 
+mo_cbal_bethy.f90:    REAL(dp), INTENT(in) :: CO2_fluxes(:) ! Sum of the carbon fluxes [kg(CO2) m-2 s-1]
+mo_cbal_bethy.f90:    ! They thus correspond to the change in the carbon pools from the day 
+mo_jsbach_interface.f90:    !! maps/transitions, update the landcover map (theLand%Surface%cover_fract), perform the necessary changes in the carbon 
+mo_jsbach_interface.f90:   ! Global Carbon and Nitrogen conservation tests
+mo_cbal_parameters.f90:  REAL(dp), PARAMETER, private :: def_frac_wood_2_atmos    = 0.8_dp !! Fraction of carbon and nitrogen from the wood pool to be 
+mo_cbal_parameters.f90:  REAL(dp), PARAMETER, private :: def_frac_green_2_atmos   = 0.8_dp !! Fraction of carbon and nitrogen from the green pool to be 
+mo_cbal_parameters.f90:  REAL(dp), PARAMETER, private :: def_frac_reserve_2_atmos = 0.8_dp !! Fraction of carbon from the reserve pool to be released 
+mo_cbal_parameters.f90:  REAL(dp), PARAMETER, private :: def_frac_harvest_2_atmos = 0.2_dp !! Fraction of carbon released immediately after harvest
+mo_cbal_parameters.f90:  REAL(dp), PARAMETER, private :: def_frac_harvest_2_slash = 0.3_dp !! Fraction of carbon and nitrogen put into litter pools
+mo_cbal_parameters.f90:  !! Carbon-to-Nitrogen ratios for all carbon pools
+mo_cbal_parameters.f90:  !! Fractions for carbon to atmosphere or slash (for anthro pools)
+mo_cbal_parameters.f90:  !! Carbon-to-Nitrogen ratios for all carbon pools
+Binary file mo_cbal_cpools.o matches
+mo_bethy_photosyn.f90:!    (i) KFLG = 0: Computes carbon production and stomatal conductance without water stress at given leaf internal CO2-concentration
+mo_bethy_photosyn.f90:!   (ii) KFLG = 1: Computes carbon production and leaf internal CO2-concentration at given stomatal conductance
+mo_bethy_photosyn.f90:    !           given leaf-internal carbon dioxide concentration 'CI'.
+mo_bethy_photosyn.f90:    !           Compute photosynthetic production and carbon dioxide concentration 
+mo_cbal_cpools.f90:    public :: relocate_CarbonAndNitrogen
+mo_cbal_cpools.f90:    public :: relocate_carbon_desert
+mo_cbal_cpools.f90:    public :: relocate_carbon_fire
+mo_cbal_cpools.f90:    public :: relocate_carbon_damage
+mo_cbal_cpools.f90:    REAL(dp), parameter,public  :: frac_wood_aboveGround  = 0.7_dp  ! Fraction of Carbon above ground in wood pool (for separation
+mo_cbal_cpools.f90:    REAL(dp), parameter,public  :: frac_green_aboveGround = 0.5_dp  ! Fraction of Carbon above ground in green pool (for separation
+mo_cbal_cpools.f90:    REAL(dp), parameter :: greenC2leafC           = 4.0_dp           ! ratio of carbon green pool (leaves, fine roots, starches,
+mo_cbal_cpools.f90:                                                                     !    sugars) to leaf carbon
+mo_cbal_cpools.f90:  ! Prints out the parameters used for the carbon pool model
+mo_cbal_cpools.f90:  ! Updates carbon and nitrogen pools and computes soil respiration rate and Net Ecosystem Product [mol(C)/m^2 s].
+mo_cbal_cpools.f90:  ! Has to be called once each day for each covertype, where carbon and nitrogen pools exists. 
+mo_cbal_cpools.f90:    real(dp),intent(in)    :: Max_C_content_woods    !! Maximum carbon content of wood pool (from lctLib)
+mo_cbal_cpools.f90:    real(dp),intent(in)    :: specific_leaf_area_C   !! Specific leaf area (from lctLib) [m^2(leaf)/mol(Carbon)]
+mo_cbal_cpools.f90:    real(dp),intent(in)    :: reserveC2leafC         !! Ratio of max. carbon in reserve pool to max. carbon of leaves
+mo_cbal_cpools.f90:    real(dp),intent(inout) :: Cpool_green            !! Green carbon pool: on input last value; updated on output 
+mo_cbal_cpools.f90:    real(dp),intent(inout) :: Cpool_woods            !! Wood carbon pool: on input last value; updated on output
+mo_cbal_cpools.f90:    real(dp),intent(inout) :: Cpool_reserve          !! Reserve carbon pool: on input last value; updated on output
+mo_cbal_cpools.f90:    real(dp),intent(inout) :: Cpool_crop_harvest     !! Crop harvest carbon pool: on input last value; updated on output
+mo_cbal_cpools.f90:    real(dp),intent(inout) :: Cpool_slow             !! Slow soil carbon pool: on input last value; updated on output
+mo_cbal_cpools.f90:    real(dp),intent(out)   :: excess_NPP             !! Part of NPP that could not be stored in one of the plant carbon pools 
+mo_cbal_cpools.f90:    real(dp),intent(out)   :: Cflx_litterTotal       !! Total carbon flux from vegetation to litter (green+woody, ag+bg)
+mo_cbal_cpools.f90:    real(dp),intent(out)   :: NPP_act                !! Actual NPP after N-limitation and excess carbon drop [mol(C)/m^2 s]
+mo_cbal_cpools.f90:    ! added for thonicke fire algorithm (spitfire) needed to correctly split the carbon pools into the different fuel classes
+mo_cbal_cpools.f90:    real(dp) :: excess_carbon
+mo_cbal_cpools.f90:    real(dp) :: Cpool_green_pot, Cpool_woods_pot         !! values of potential carbon pools i.e. before accounting for N-limitation
+mo_cbal_cpools.f90:    LOGICAL  :: with_Nitrogen        !! .FALSE.: only Carbon pools are updated; .TRUE.: in addition also Nitrogen pools are updated 
+mo_cbal_cpools.f90:    LOGICAL  :: with_yasso           !! .FALSE.: cbalance model for litter and soil carbon is used; .TRUE.: yasso model is used 
+mo_cbal_cpools.f90:       !! ============== NON-N-LIMITED CARBON AND NITROGEN ALLOCATION =========================================================
+mo_cbal_cpools.f90:       C_2_litter_greenPool =  &                                     !! Maximally the whole carbon from the green pool is transfered
+mo_cbal_cpools.f90:       Cpool_green = Cpool_green - C_2_litter_greenPool              !! This removes carbon from the green pool
+mo_cbal_cpools.f90:       excess_carbon = max(0.0_dp,Cpool_green - Cpool_green_max)     !! If by the reduction of LAI the maximum value of the green
+mo_cbal_cpools.f90:       C_2_litter_greenPool = C_2_litter_greenPool + excess_carbon   !!    excess C that has also to be shedded to the green litter
+mo_cbal_cpools.f90:       Cpool_green = Cpool_green - excess_carbon                     !!    pool and also substracted from the green pool
+mo_cbal_cpools.f90:          !!  Move shedded Carbon pro rata to crop harvest flux and to ag green litter pools
+mo_cbal_cpools.f90:          !! Move shedded Carbon to ag green litter pools
+mo_cbal_cpools.f90:       !! Move shedded Carbon to bg green litter pools
+mo_cbal_cpools.f90:       !!    Some organic carbon of the reserve pool is always lost with mortality of plants. 
+mo_cbal_cpools.f90:       Cpool_slow = Cpool_slow + d_Cpool_slow                 !! Remove respired Carbon (note the negative sign!)
+mo_cbal_cpools.f90:       !! ============== START OF POTENTIAL PLANT-CARBON ALLOCATION TO ESTIMATE PLANT-N-DEMAND =================================
+mo_cbal_cpools.f90:             Cpool_reserve = 0.0_dp                                    !! .. calling routine. Hence all Carbon from the reserve pool
+mo_cbal_cpools.f90:          !! Growth of Wood Pool (structural carbon of living plants)
+mo_cbal_cpools.f90:          excess_carbon = max(0.0_dp,Cpool_woods_pot-Max_C_content_woods)    !! .. but thereby the pool may get too large
+mo_cbal_cpools.f90:          Cpool_woods_pot = Cpool_woods_pot - excess_carbon                  !! .. so that the excess carbon has once more to be 
+mo_cbal_cpools.f90:          NPP_2_greenPool = NPP_2_greenPool + excess_carbon                  !! .. and instead made available to the green pool
+mo_cbal_cpools.f90:          NPP_2_woodPool = NPP_2_woodPool - excess_carbon                    !! .. and the actual amount of NPP put to the wood pool
+mo_cbal_cpools.f90:             excess_carbon =                                         &       !! .... Thereby it may happen that it gets larger than
+mo_cbal_cpools.f90:                  max(0.0_dp,Cpool_reserve_pot - Cpool_reserve_optimal)      !! .... optimal so that there is excess carbon
+mo_cbal_cpools.f90:             Cpool_reserve_pot = Cpool_reserve_pot - excess_carbon           !! .... that needs not be taken up
+mo_cbal_cpools.f90:             NPP_2_greenPool = NPP_2_greenPool + excess_carbon               !! .... but can better be used to increase the green
+mo_cbal_cpools.f90:             NPP_2_reservePool = NPP_2_reservePool - excess_carbon           !! .... pool and the actual amount of NPP put to the
+mo_cbal_cpools.f90:          excess_carbon = max(0.0_dp,Cpool_green_pot - Cpool_green_max)      !! .. Thereby it may get larger than appropriate for 
+mo_cbal_cpools.f90:          NPP_2_greenPool = NPP_2_greenPool - excess_carbon                  !! .. Hence the actual amount of NPP put to the green
+mo_cbal_cpools.f90:          Cpool_green_pot = Cpool_green_pot - excess_carbon                  !! .. This excess carbon needs not be taken up but
+mo_cbal_cpools.f90:             Cpool_reserve_pot = Cpool_reserve_pot + excess_carbon           !! .... it is tried to put the carbon there,
+mo_cbal_cpools.f90:             NPP_2_reservePool = NPP_2_reservePool + excess_carbon           !! .... which means that additional NPP is put to the 
+mo_cbal_cpools.f90:             excess_carbon =                                          &      !! .... Thereby it may happen that the reserve pool
+mo_cbal_cpools.f90:             Cpool_reserve_pot = Cpool_reserve_pot - excess_carbon           !! .... In that case the excess carbon is once more
+mo_cbal_cpools.f90:             NPP_2_reservePool = NPP_2_reservePool - excess_carbon           !! .... so that the actual amount of NPP put into the
+mo_cbal_cpools.f90:          excess_NPP = excess_carbon / sec_per_day
+mo_cbal_cpools.f90:       !! ============== START OF POTENTIAL LITTER-CARBON ALLOCATION ==============================================
+mo_cbal_cpools.f90:       !! ============== use nitrogen from N mobile pool to satisfy (at least partly) for potential carbon fluxes ===
+mo_cbal_cpools.f90:       Cflx_NPP_2_green_pot          = NPP_2_greenPool                                       !! potential growth of green carbon 
+mo_cbal_cpools.f90:       Cflx_NPP_2_wood_pot           = NPP_2_woodPool                                        !! potential growth of wood carbon 
+mo_cbal_cpools.f90:       Cflx_NPP_2_reserve_pot        = NPP_2_reservePool                                     !! potential growth of reserve carbon
+mo_cbal_cpools.f90:          ! Consider a pool of organic carbon with N-content N and C-content C. Assume an influx of (organic) C called c1 associated
+mo_cbal_cpools.f90:          ! with a N-influx called n1. Assume further two Carbon outfluxes, an organic one called c2 associated with a N-outflux n2,
+mo_cbal_cpools.f90:          ! and a mineral Carbon outflux called c0.
+mo_cbal_cpools.f90:  ! --- relocate_carbonAndNitrogen() -----------------------------------------------------------------------------------------------
+mo_cbal_cpools.f90:  ! This routine models the consequences of shifts in the cover fractions of the tiles for the carbon (C) and nitrogen (N) pools.
+mo_cbal_cpools.f90:  ! reservoirs (atmosphere, litter, soil) by those processes that removed the vegetation (general carbon flow reflecting minimum
+mo_cbal_cpools.f90:  ! 1. If this routine is called with N-pools, then not only carbon is relocated, but also nitrogen.
+mo_cbal_cpools.f90:  !    In absence of N-pools ("carbon only mode") only carbon is reshuffled.  
+mo_cbal_cpools.f90:  subroutine relocate_CarbonAndNitrogen(lctlib, surface, cf_old, cf_new, veg_fract_correction,      &
+mo_cbal_cpools.f90:                                        ! Carbon
+mo_cbal_cpools.f90:                                        ! soil carbon pools of the old cbalance scheme
+mo_cbal_cpools.f90:                                        ! Yasso litter and soil carbon pools
+mo_cbal_cpools.f90:    real(dp),intent(inout) :: Cpool_green(:,:)           !! Value of green carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp),intent(inout) :: Cpool_woods(:,:)           !! Value of wood carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp),intent(inout) :: Cpool_reserve(:,:)         !! Value of reserve carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp),intent(inout) :: Cpool_crop_harvest(:,:)    !! Value of crop harvest carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp), optional, intent(inout) :: Cpool_litter_green_ag(:,:) !! above ground green litter carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp), optional, intent(inout) :: Cpool_litter_green_bg(:,:) !! below ground green litter carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp), optional, intent(inout) :: Cpool_litter_wood_ag(:,:)  !! above ground wood litter carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp), optional, intent(inout) :: Cpool_litter_wood_bg(:,:)  !! below ground wood litter carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp), optional, intent(inout) :: Cpool_slow(:,:)            !! slow soil carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp), optional, intent(inout) :: YCpool_acid_ag1(:,:)       !! above ground acid soluble carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp), optional, intent(inout) :: YCpool_water_ag1(:,:)      !! above ground water soluble carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp), optional, intent(inout) :: YCpool_ethanol_ag1(:,:)    !! above ground ethanol soluble carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp), optional, intent(inout) :: YCpool_nonsoluble_ag1(:,:) !! above ground non carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp), optional, intent(inout) :: YCpool_acid_bg1(:,:)       !! below ground acid soluble carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp), optional, intent(inout) :: YCpool_water_bg1(:,:)      !! below ground water soluble carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp), optional, intent(inout) :: YCpool_ethanol_bg1(:,:)    !! below ground ethanol soluble carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp), optional, intent(inout) :: YCpool_nonsoluble_bg1(:,:) !! below ground non soluble carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp), optional, intent(inout) :: YCpool_humus_1(:,:)         !! humus carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp), optional, intent(inout) :: YCpool_acid_ag2(:,:)       !! above ground acid soluble carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp), optional, intent(inout) :: YCpool_water_ag2(:,:)      !! above ground water soluble carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp), optional, intent(inout) :: YCpool_ethanol_ag2(:,:)    !! above ground ethanol soluble carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp), optional, intent(inout) :: YCpool_nonsoluble_ag2(:,:) !! above ground non carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp), optional, intent(inout) :: YCpool_acid_bg2(:,:)       !! below ground acid soluble carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp), optional, intent(inout) :: YCpool_water_bg2(:,:)      !! below ground water soluble carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp), optional, intent(inout) :: YCpool_ethanol_bg2(:,:)    !! below ground ethanol soluble carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp), optional, intent(inout) :: YCpool_nonsoluble_bg2(:,:) !! below ground non soluble carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp), optional, intent(inout) :: YCpool_humus_2(:,:)         !! humus carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp),optional,intent(out) :: C_2_atmos(:)                 !! Amount of carbon directly emitted to atmosphere in this
+mo_cbal_cpools.f90:    real(dp),optional,intent(out) :: C_2_litterGreenPools(:)      !! Amount of carbon relocated by land cover change from green
+mo_cbal_cpools.f90:    real(dp),optional,intent(out) :: C_2_litterWoodPool_ag(:)     !! Amount of carbon relocated by land cover change from wood
+mo_cbal_cpools.f90:    real(dp),optional,intent(out) :: C_2_litterWoodPool_bg(:)     !! Amount of carbon relocated by land cover change from wood
+mo_cbal_cpools.f90:    real(dp),optional,intent(inout) ::  Cpool_onSite(:)           !! Amount of carbon remains in onSite anthro annual pool 
+mo_cbal_cpools.f90:    real(dp),optional,intent(inout) ::  Cpool_paper(:)            !! Amount of carbon remains in anthro decadal pool
+mo_cbal_cpools.f90:    real(dp),optional,intent(inout) ::  Cpool_construction(:)     !! Amount of carbon remains in anthro centinnial pool
+mo_cbal_cpools.f90:    real(dp),optional,intent(out)   ::  C_onSite_2_atmos(:)       !! Carbon flux from anthro annual pool to atmos 
+mo_cbal_cpools.f90:    real(dp),optional,intent(out)   ::  C_paper_2_atmos(:)              !! Carbon flux from green anthro annual pool to atmos 
+mo_cbal_cpools.f90:    real(dp),optional,intent(out)   ::  C_construction_2_atmos(:)       !! Carbon flux from woody anthro annual pool to atmos
+mo_cbal_cpools.f90:    real(dp),optional,intent(out)   ::  C_2_onSite(:)                   !! Carbon flux to onsite [mol(C)/m^2(vegetated area)/day]
+mo_cbal_cpools.f90:    real(dp),optional,intent(out)   ::  C_2_construction(:)             !! Carbon flux from woody anthro annual pool to paper
+mo_cbal_cpools.f90:    real(dp),optional,intent(out)   ::  C_2_paper(:)                    !! Carbon flux from woody anthro annual pool to
+mo_cbal_cpools.f90:    real(dp) :: Chumus_1_2_humus_1(1:size(cf_old,DIM=1))                 !! Total carbon relocated from humus pools of shrinking 
+mo_cbal_cpools.f90:    real(dp) :: Cacid_ag1_2_acid_ag1(1:size(cf_old,DIM=1))             !! Total carbon relocated from above ground acid pools of
+mo_cbal_cpools.f90:    real(dp) :: Cacid_bg1_2_acid_bg1(1:size(cf_old,DIM=1))             !! Total carbon relocated from below ground acid pools of
+mo_cbal_cpools.f90:    real(dp) :: Cwater_ag1_2_water_ag1(1:size(cf_old,DIM=1))           !! Total carbon relocated from above ground water pools of
+mo_cbal_cpools.f90:    real(dp) :: Cwater_bg1_2_water_bg1(1:size(cf_old,DIM=1))           !! Total carbon relocated from below ground water pools of
+mo_cbal_cpools.f90:    real(dp) :: Cethanol_ag1_2_ethanol_ag1(1:size(cf_old,DIM=1))       !! Total carbon relocated from above ground ethanol pools of
+mo_cbal_cpools.f90:    real(dp) :: Cethanol_bg1_2_ethanol_bg1(1:size(cf_old,DIM=1))       !! Total carbon relocated from below ground ethanol pools of
+mo_cbal_cpools.f90:    real(dp) :: Cnonsoluble_ag1_2_nonsoluble_ag1(1:size(cf_old,DIM=1)) !! Total carbon relocated from above ground nonsoluble pools
+mo_cbal_cpools.f90:    real(dp) :: Cnonsoluble_bg1_2_nonsoluble_bg1(1:size(cf_old,DIM=1)) !! Total carbon relocated from below ground nonsoluble pools
+mo_cbal_cpools.f90:    real(dp) :: Chumus_2_2_humus_2(1:size(cf_old,DIM=1))                 !! Total carbon relocated from humus pools of shrinking 
+mo_cbal_cpools.f90:    real(dp) :: Cacid_ag2_2_acid_ag2(1:size(cf_old,DIM=1))             !! Total carbon relocated from above ground acid pools of
+mo_cbal_cpools.f90:    real(dp) :: Cacid_bg2_2_acid_bg2(1:size(cf_old,DIM=1))             !! Total carbon relocated from below ground acid pools of
+mo_cbal_cpools.f90:    real(dp) :: Cwater_ag2_2_water_ag2(1:size(cf_old,DIM=1))           !! Total carbon relocated from above ground water pools of
+mo_cbal_cpools.f90:    real(dp) :: Cwater_bg2_2_water_bg2(1:size(cf_old,DIM=1))           !! Total carbon relocated from below ground water pools of
+mo_cbal_cpools.f90:    real(dp) :: Cethanol_ag2_2_ethanol_ag2(1:size(cf_old,DIM=1))       !! Total carbon relocated from above ground ethanol pools of
+mo_cbal_cpools.f90:    real(dp) :: Cethanol_bg2_2_ethanol_bg2(1:size(cf_old,DIM=1))       !! Total carbon relocated from below ground ethanol pools of
+mo_cbal_cpools.f90:    real(dp) :: Cnonsoluble_ag2_2_nonsoluble_ag2(1:size(cf_old,DIM=1)) !! Total carbon relocated from above ground nonsoluble pools
+mo_cbal_cpools.f90:    real(dp) :: Cnonsoluble_bg2_2_nonsoluble_bg2(1:size(cf_old,DIM=1)) !! Total carbon relocated from below ground nonsoluble pools
+mo_cbal_cpools.f90:    real(dp) :: C_2_litterGreenPool_ag(1:size(cf_old,DIM=1))    !! Carbon relocated by land cover change from green and reserve
+mo_cbal_cpools.f90:    real(dp) :: C_2_litterGreenPool_bg(1:size(cf_old,DIM=1))    !! Carbon relocated by land cover change from green and reserve
+mo_cbal_cpools.f90:    real(dp) :: Cslow_2_slow(1:size(cf_old,DIM=1))                   !! Total carbon relocated from slow pools of shrinking 
+mo_cbal_cpools.f90:    real(dp) :: Ccrop_harvest_2_crop_harvest(1:size(cf_old,DIM=1))   !! Total carbon relocated from crop harvest pools of shrinking 
+mo_cbal_cpools.f90:    real(dp) :: ClitGreen_ag_2_litGreen_ag(1:size(cf_old,DIM=1))  !! Total carbon relocated from above ground green litter pools of 
+mo_cbal_cpools.f90:    real(dp) :: ClitGreen_bg_2_litGreen_bg(1:size(cf_old,DIM=1))  !! Total carbon relocated from below ground green litter pools of 
+mo_cbal_cpools.f90:    !! For land cover change pass frac_wood_2_atmos, frac_green_2_atmos, frac_reserve_2_atmos, carbon_2_atmos,
+mo_cbal_cpools.f90:    !! carbon_2_litter_green_bgSoilPool and carbon_2_slowSoilPool to this routine.
+mo_cbal_cpools.f90:    !! Check for landcover change in carbon mode
+mo_cbal_cpools.f90:           CALL finish('relocate_CarbonAndNitrogen()','at least one variable missing to handle land cover change')
+mo_cbal_cpools.f90:          call finish('relocate_CarbonAndNitrogen()','at least one variable missing to handle nitrogen')
+mo_cbal_cpools.f90:          call finish('relocate_CarbonAndNitrogen()','at least one variable missing to handle cbalance')
+mo_cbal_cpools.f90:        call finish('relocate_CarbonAndNitrogen()','at least one variable missing to handle yasso pools')
+mo_cbal_cpools.f90:    !! 1. PART OF THE SUBROUTINE relocate_CarbonAndNitrogen !!
+mo_cbal_cpools.f90:    !! 2. PART OF THE SUBROUTINE relocate_CarbonAndNitrogen !!
+mo_cbal_cpools.f90:    ! fluxes of soil carbon
+mo_cbal_cpools.f90:    !! 3. PART OF THE SUBROUTINE relocate_CarbonAndNitrogen !!
+mo_cbal_cpools.f90:    !! 4. PART OF THE SUBROUTINE relocate_CarbonAndNitrogen !!
+mo_cbal_cpools.f90:!!$             !! In the case lcc and anthropogenic pools are used, the freed carbon goes into the anthropogenic pools
+mo_cbal_cpools.f90:  END SUBROUTINE relocate_CarbonAndNitrogen
+mo_cbal_cpools.f90:  ! --- relocate_carbon_desert() ---------------------------------------------------------------------------------------------------
+mo_cbal_cpools.f90:  ! This routine models the consequences of desert dynamics for the carbon pools. More precisely:
+mo_cbal_cpools.f90:  ! It is assumed that no carbon fluxes have to be considered as these are already taken into account by the other routines in this
+mo_cbal_cpools.f90:  ! module. So, the amount of carbon per unit area is only rescaled to conserve the carbon mass.
+mo_cbal_cpools.f90:  subroutine relocate_carbon_desert(nidx, ntiles, is_present, is_glacier, veg_ratio_max, veg_ratio_max_old, &
+mo_cbal_cpools.f90:                                         ! Yasso litter and soil carbon pools
+mo_cbal_cpools.f90:                                         ! Anthropogenic carbon pools
+mo_cbal_cpools.f90:    real(dp),intent(inout) :: Cpool_green(:,:)            !! Value of green carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp),intent(inout) :: Cpool_woods(:,:)            !! Value of wood carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp),intent(inout) :: Cpool_reserve(:,:)          !! Value of reserve carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp),intent(inout) :: Cpool_crop_harvest(:,:)     !! Value of crop harvest carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp),intent(inout),optional :: Cpool_litter_green_ag(:,:)    !! Above ground green litter carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp),intent(inout),optional :: Cpool_litter_green_bg(:,:)    !! Below ground green litter carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp),intent(inout),optional :: Cpool_litter_wood_ag(:,:)     !! Above ground woody litter carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp),intent(inout),optional :: Cpool_litter_wood_bg(:,:)     !! Below ground woody litter carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp),intent(inout),optional :: Cpool_slow(:,:)               !! Value of slow soil carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:          CALL finish('relocate_carbon_desert()','at least one variable missing to handle nitrogen pools')       
+mo_cbal_cpools.f90:            CALL finish('relocate_carbon_desert()','at least one variable missing to handle yasso pools')
+mo_cbal_cpools.f90:          CALL finish('relocate_carbon_desert','at least one variable missing to handle anthropogenic pools')       
+mo_cbal_cpools.f90:  end subroutine relocate_carbon_desert
+mo_cbal_cpools.f90:  ! --- relocate_carbon_fire() ---------------------------------------------------------------------------------------------------
+mo_cbal_cpools.f90:  ! This routine models the consequences of fire for the carbon pools. More precisely:
+mo_cbal_cpools.f90:  ! It is assumed that for the burned area the carbon from the above ground litter pools (Cpool_litter_green_ag,
+mo_cbal_cpools.f90:  ! Cpool_litter_wood_ag) is completely released to the atmosphere and the carbon from the living plant pools
+mo_cbal_cpools.f90:  subroutine relocate_carbon_fire(nidx, ntiles, with_yasso, ldiag, frac_burned, cf,             &
+mo_cbal_cpools.f90:                                       carbon_2_GreenLitterPools,                               &
+mo_cbal_cpools.f90:                                       carbon_2_WoodLitterPools,                                &
+mo_cbal_cpools.f90:                                       carbon_2_atmos_tiled_ext, carbon_2_atmos,                &
+mo_cbal_cpools.f90:                                       ! Yasso litter and soil carbon pools
+mo_cbal_cpools.f90:    real(dp),intent(inout) :: Cpool_green(:,:)            !! Value of green carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp),intent(inout) :: Cpool_woods(:,:)            !! Value of wood carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp),intent(inout) :: Cpool_reserve(:,:)          !! Value of reserve carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp),intent(inout) :: carbon_2_GreenLitterPools(:)!! Amount of carbon relocated by wind damage (in) and by wind and fire
+mo_cbal_cpools.f90:    real(dp),intent(inout) :: carbon_2_WoodLitterPools(:) !! Amount of carbon relocated by wind damage (in) and by wind and fire
+mo_cbal_cpools.f90:    real(dp),intent(inout),target :: carbon_2_atmos_tiled_ext(:,:) !! Carbon immedieatly released by fire per tile [mol(C)m-2(veg)]
+mo_cbal_cpools.f90:    real(dp),intent(out)   :: carbon_2_atmos(:)           !! Amount of carbon immediately released by fire
+mo_cbal_cpools.f90:    real(dp),intent(inout),optional :: Cpool_litter_green_ag(:,:)    !! Above ground green litter carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp),intent(inout),optional :: Cpool_litter_green_bg(:,:)    !! Below ground green litter carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp),intent(inout),optional :: Cpool_litter_wood_ag(:,:)     !! Wood litter carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp),intent(inout),optional :: Cpool_litter_wood_bg(:,:)     !! Wood litter carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    REAL(dp), POINTER :: carbon_2_atmos_tiled_local(:,:), carbon_2_atmos_tiled(:,:)
+mo_cbal_cpools.f90:    real(dp)  ::  carbon_2_GreenLitterPools_tiled(nidx,ntiles)
+mo_cbal_cpools.f90:    real(dp)  ::  carbon_2_WoodLitterPools_tiled(nidx,ntiles)
+mo_cbal_cpools.f90:                  CALL finish('relocate_carbon_fire()','at least one variable missing to handle nitrogen dynamics')
+mo_cbal_cpools.f90:      carbon_2_atmos_tiled => carbon_2_atmos_tiled_ext
+mo_cbal_cpools.f90:      ALLOCATE(carbon_2_atmos_tiled_local(nidx,ntiles))
+mo_cbal_cpools.f90:      carbon_2_atmos_tiled => carbon_2_atmos_tiled_local
+mo_cbal_cpools.f90:    carbon_2_GreenLitterPools_tiled(:,:) = 0._dp
+mo_cbal_cpools.f90:    carbon_2_WoodLitterPools_tiled(:,:) = 0._dp
+mo_cbal_cpools.f90:    !! diagnose amount of carbon released from the green and reserve pool to the green litter pools
+mo_cbal_cpools.f90:    !! diagnose amount of carbon released from the wood pool to the woody litter pools
+mo_cbal_cpools.f90:    !! determine amount of carbon released from the wood pool, living tissue pools, and litter pools to the atmosphere
+mo_cbal_cpools.f90:    carbon_2_GreenLitterPools_tiled(:,:) = (Cpool_green(:,:) + Cpool_reserve(:,:)) * (1._dp - frac_green_aboveGround) * &
+mo_cbal_cpools.f90:    carbon_2_WoodLitterPools_tiled(:,:) = Cpool_woods(:,:) * (1._dp - frac_wood_2_atmos_fire * frac_wood_aboveGround) * &
+mo_cbal_cpools.f90:       carbon_2_atmos_tiled(:,:) = ((Cpool_green(:,:) + Cpool_reserve(:,:)) * frac_green_aboveGround + &
+mo_cbal_cpools.f90:       carbon_2_atmos_tiled(:,:) = ((Cpool_green(:,:) + Cpool_reserve(:,:)) * frac_green_aboveGround      + &
+mo_cbal_cpools.f90:    !! sum carbon fluxes for all tiles
+mo_cbal_cpools.f90:    carbon_2_GreenLitterPools(:) = carbon_2_GreenLitterPools(:) + SUM(carbon_2_GreenLitterPools_tiled(:,:),DIM=2)
+mo_cbal_cpools.f90:    carbon_2_WoodLitterPools(:) = carbon_2_WoodLitterPools(:) + SUM(carbon_2_WoodLitterPools_tiled(:,:),DIM=2)
+mo_cbal_cpools.f90:    carbon_2_atmos(:) = SUM(carbon_2_atmos_tiled(:,:),DIM=2)
+mo_cbal_cpools.f90:       !! lower down the carbon density of above ground litter pools
+mo_cbal_cpools.f90:       !! transfer carbon from the living tissue pools (green and reserve) to the below ground green litter pool
+mo_cbal_cpools.f90:       !! transfer carbon from the wood pool to the above ground woody litter pool
+mo_cbal_cpools.f90:       !! transfer carbon from the wood pool to the below ground woody litter pool
+mo_cbal_cpools.f90:       ! Add green and reserve vegetation carbon to belowground green litter pools
+mo_cbal_cpools.f90:    !! lower down the carbon density of living plant pools
+mo_cbal_cpools.f90:    if (.not. ldiag) deallocate(carbon_2_atmos_tiled_local)
+mo_cbal_cpools.f90:  end subroutine relocate_carbon_fire
+mo_cbal_cpools.f90:  ! --- relocate_carbon_damage() ---------------------------------------------------------------------------------------------------
+mo_cbal_cpools.f90:  ! This routine models the consequences of damages to the vegetation (e.g. wind break) for the carbon pools. More precisely:
+mo_cbal_cpools.f90:  ! It is assumed that for the damaged area the carbon from the living plant pools (Cpool_green, Cpool_reserve and Cpool_woods)
+mo_cbal_cpools.f90:  subroutine relocate_carbon_damage(nidx, ntiles, with_yasso, frac_damaged, cf,             &
+mo_cbal_cpools.f90:                                         carbon_2_GreenLitterPools,                         &
+mo_cbal_cpools.f90:                                         carbon_2_WoodLitterPools,                          &            
+mo_cbal_cpools.f90:    real(dp),intent(inout) :: Cpool_green(:,:)            !! Value of green carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp),intent(inout) :: Cpool_woods(:,:)            !! Value of wood carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp),intent(inout) :: Cpool_reserve(:,:)          !! Value of reserve carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp),intent(out)   :: carbon_2_GreenLitterPools(:)!! Amount of carbon relocated by wind damage
+mo_cbal_cpools.f90:    real(dp),intent(out)   :: carbon_2_WoodLitterPools(:) !! Amount of carbon relocated by wind damage and fire
+mo_cbal_cpools.f90:    real(dp),intent(inout),optional :: Cpool_litter_green_ag(:,:)  !! Value of above ground green litter carbon pool 
+mo_cbal_cpools.f90:    real(dp),intent(inout),optional :: Cpool_litter_green_bg(:,:)  !! Value of below ground green litter carbon pool 
+mo_cbal_cpools.f90:    real(dp),intent(inout),optional :: Cpool_litter_wood_ag(:,:)   !! Value of wood litter carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp),intent(inout),optional :: Cpool_litter_wood_bg(:,:)   !! Value of wood litter carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp)  ::  carbon_2_WoodLitterPools_tiled(nidx,ntiles)
+mo_cbal_cpools.f90:    real(dp)  ::  carbon_2_GreenLitterPools_tiled(nidx,ntiles)
+mo_cbal_cpools.f90:            CALL finish('relocate_carbon_damage()','at least one variable missing to handle nitrogen dynamics')
+mo_cbal_cpools.f90:    carbon_2_WoodLitterPools_tiled(:,:) = 0._dp
+mo_cbal_cpools.f90:    carbon_2_greenLitterPools_tiled(:,:) = 0._dp
+mo_cbal_cpools.f90:    !! transfer carbon from the wood pool to the wood litter pools nd
+mo_cbal_cpools.f90:    !! transfer carbon from the green and reserve pool to the green litter pool
+mo_cbal_cpools.f90:    !! determine amount of carbon relocated
+mo_cbal_cpools.f90:    carbon_2_WoodLitterPools_tiled(:,:) = Cpool_woods(:,:) &
+mo_cbal_cpools.f90:    carbon_2_GreenLitterPools_tiled(:,:) = (Cpool_green(:,:) + Cpool_reserve(:,:)) &
+mo_cbal_cpools.f90:    !! sum carbon fluxes for all tiles
+mo_cbal_cpools.f90:    carbon_2_WoodLitterPools(:) = SUM(carbon_2_WoodLitterPools_tiled(:,:),DIM=2)
+mo_cbal_cpools.f90:    carbon_2_GreenLitterPools(:) = SUM(carbon_2_GreenLitterPools_tiled(:,:),DIM=2)
+mo_cbal_cpools.f90:    !! lower down the carbon density of living plant pools
+mo_cbal_cpools.f90:  end subroutine relocate_carbon_damage
+mo_cbal_cpools.f90:  ! matrix. Otherwise the logic of this routine is quite similar to the routine relocate_carbonAndNitrogen() from above.
+mo_cbal_cpools.f90:    real(dp),intent(out)   :: C_2_atmos(:)                  !! Amount of carbon directly emitted to atmosphere in this timestep 
+mo_cbal_cpools.f90:    real(dp),intent(inout) :: Cpool_green(:,:)              !! Value of green carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp),intent(inout) :: Cpool_woods(:,:)              !! Value of wood carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp),intent(inout) :: Cpool_reserve(:,:)            !! Value of reserve carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp),intent(inout) :: Cpool_crop_harvest(:,:)       !! Value of crop harvest carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp),optional,intent(inout) :: Cpool_litter_green_ag(:,:)      !! above ground green litter carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp),optional,intent(inout) :: Cpool_litter_green_bg(:,:)      !! below ground green litter carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp),optional,intent(inout) :: Cpool_litter_wood_ag(:,:)       !! above ground wood litter carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp),optional,intent(inout) :: Cpool_litter_wood_bg(:,:)       !! below ground wood litter carbon pool [mol(C)/m^(canopy)2]
+mo_cbal_cpools.f90:    real(dp),optional,intent(inout) :: Cpool_slow(:,:)                 !! slow soil carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp),optional,intent(out)   :: C_2_litterGreenPools(:)         !! Amount of carbon relocated by land cover change from green
+mo_cbal_cpools.f90:    real(dp),optional,intent(out)   :: C_2_litterWoodPool_ag(:)        !! Amount of carbon relocated by land cover change from wood
+mo_cbal_cpools.f90:    real(dp),optional,intent(out)   :: C_2_litterWoodPool_bg(:)        !! Amount of carbon relocated by land cover change from wood
+mo_cbal_cpools.f90:    real(dp),optional,intent(inout) ::  Cpool_onSite(:)                !! Amount of carbon remains in anthro annual pool
+mo_cbal_cpools.f90:    real(dp),optional,intent(inout) ::  Cpool_paper(:)                  !! Amount of carbon remains in anthro decadal pool
+mo_cbal_cpools.f90:    real(dp),optional,intent(inout) ::  Cpool_construction(:)           !! Amount of carbon remains in anthro centinnial pool
+mo_cbal_cpools.f90:    real(dp),optional,intent(out)   ::  C_paper_2_atmos(:)              !! Carbon flux from green anthro annual pool to atmos
+mo_cbal_cpools.f90:    real(dp),optional,intent(out)   ::  C_construction_2_atmos(:)       !! Carbon flux from woody anthro annual pool to atmos
+mo_cbal_cpools.f90:    real(dp),optional,intent(out)   ::  C_2_construction(:)             !! Carbon flux from woody anthro annual pool to paper
+mo_cbal_cpools.f90:    real(dp),optional,intent(out)   ::  C_2_paper(:)                    !! Carbon flux from woody anthro annual pool to
+mo_cbal_cpools.f90:    real(dp) :: Cpool_green_loss(1:nidx,1:ntiles)    !! Carbon loss of green pool for each tile (per corrected vegetated area)
+mo_cbal_cpools.f90:    real(dp) :: Cpool_reserve_loss(1:nidx,1:ntiles)  !! Carbon loss of reserve pool for each tile (per corrected vegetated area)
+mo_cbal_cpools.f90:    real(dp) :: Cpool_woods_loss(1:nidx,1:ntiles)    !! Carbon loss of wood pool for each tile (per corrected vegetated area)
+mo_cbal_cpools.f90:    real(dp) :: LitterGreen(1:nidx,1:ntiles)    !! Carbon gain of green litter pools (below and above ground)    
+mo_cbal_cpools.f90:    real(dp) :: LitterWood(1:nidx,1:ntiles)     !! Carbon gain of wood litter pools (below and above ground)
+mo_cbal_cpools.f90:    ! Calculate carbon loss of all pools and update anthro pools if requested
+mo_cbal_cpools.f90:       !! Carbon loss to atmosphere
+mo_cbal_cpools.f90:       !! Carbon gains of litter pools
+mo_cbal_cpools.f90:  ! This routine models the consequences of harvest for the carbon pools and nitrogen pools.
+mo_cbal_cpools.f90:                         Carbon_2_onSite, Carbon_2_paper, Carbon_2_construction, &
+mo_cbal_cpools.f90:                         Carbon_onSite_2_atmos,                               &
+mo_cbal_cpools.f90:                         Carbon_paper_2_atmos, Carbon_construction_2_atmos,   &
+mo_cbal_cpools.f90:    real(dp), intent(inout)             :: Cpool_green(:,:)           !! Value of green carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp), intent(inout)             :: Cpool_woods(:,:)           !! Value of wood carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp), intent(inout)             :: Cpool_reserve(:,:)         !! Value of reserve carbon pool [mol(C)/m^2(canopy)]
+mo_cbal_cpools.f90:    real(dp), intent(in)                :: harvest(:)                 !! Carbon harvested [mol(C)/m^2(corr. veget. area)/timestep]
+mo_cbal_cpools.f90:    real(dp), intent(out)               :: C2litter(:)                !! Amount of harvested carbon relocated to the below ground 
+mo_cbal_cpools.f90:    real(dp), intent(out),   optional   :: Carbon_2_onSite(:)
+mo_cbal_cpools.f90:    real(dp), intent(out),   optional   :: Carbon_2_paper(:)
+mo_cbal_cpools.f90:    real(dp), intent(out),   optional   :: Carbon_2_construction(:)
+mo_cbal_cpools.f90:    real(dp), intent(out),   optional   :: Carbon_onSite_2_atmos(:)
+mo_cbal_cpools.f90:    real(dp), intent(out),   optional   :: Carbon_paper_2_atmos(:)
+mo_cbal_cpools.f90:    real(dp), intent(out),   optional   :: Carbon_construction_2_atmos(:)
+mo_cbal_cpools.f90:    real(dp), intent(in),    optional   :: frac_harvest_2_slash       !! Fraction of harvested carbon put to slash 
+mo_cbal_cpools.f90:    real(dp), intent(in),    optional   :: frac_harvest_2_atmos       !! Fraction of harvested carbon immediately emitted to atmos. 
+mo_cbal_cpools.f90:    real(dp) :: Cpool_G_ag_corr(1:nidx,1:ntiles)     !! Above ground carbon in green pool (per corrected vegetated area)
+mo_cbal_cpools.f90:    real(dp) :: Cpool_R_ag_corr(1:nidx,1:ntiles)     !! Above ground carbon in reserve pool (per corrected vegetated area)
+mo_cbal_cpools.f90:    real(dp) :: Cpool_W_ag_corr(1:nidx,1:ntiles)     !! Above ground carbon in wood pool (per corrected vegetated area)
+mo_cbal_cpools.f90:    real(dp) :: Cpool_nat_ag_corr(1:nidx)     !! Total above ground carbon from woody vegetation (per corrected vegetated area)
+mo_cbal_cpools.f90:    !! Above ground carbon in vegetation pools
+mo_cbal_cpools.f90:    !! Total above carbon in pools of woody vegetation of a grid cell
+mo_cbal_cpools.f90:    !! Harvest from vegetation pools assuming harvest proportional to above ground carbon
+mo_cbal_cpools.f90:       !! Increase of carbon in below ground litter pools
+mo_cbal_cpools.f90:                   !! valid for Cbalance as well as for YASSO, as N-pool structure is the same for both soil carbon models
+mo_cbal_cpools.f90:       !! Direct carbon emissions to atmosphere
+mo_cbal_cpools.f90:       !! Relocate Carbon into anthropogenic pools (paper and construction)
+mo_cbal_cpools.f90:       Carbon_2_onSite      (:) = 0.0_dp
+mo_cbal_cpools.f90:       Carbon_2_paper       (:) = 0.0_dp
+mo_cbal_cpools.f90:       Carbon_2_construction(:) = 0.0_dp
+mo_cbal_cpools.f90:                Carbon_2_onSite(n) = Carbon_2_onSite(n) + Tmp &
+mo_cbal_cpools.f90:                Carbon_2_paper(n) = Carbon_2_paper(n) + Tmp * lctlib%frac_harv_C_2_paper(ct)
+mo_cbal_cpools.f90:                Carbon_2_construction(n) = Carbon_2_construction(n) + Tmp * lctlib%frac_harv_C_2_construction(ct)
+mo_cbal_cpools.f90:                   !! valid for Cbalance as well as for YASSO, as N-pool structure is the same for both soil carbon models
+mo_cbal_cpools.f90:       !! Carbon from anthropogenic pools to atmosphere
+mo_cbal_cpools.f90:       Carbon_onSite_2_atmos      (:) = Cpool_onSite      (:) / tau_onSite
+mo_cbal_cpools.f90:       Carbon_paper_2_atmos       (:) = Cpool_paper       (:) / tau_paper
+mo_cbal_cpools.f90:       Carbon_construction_2_atmos(:) = Cpool_construction(:) / tau_construction
+mo_cbal_cpools.f90:       Cpool_onSite      (:) = Cpool_onSite      (:) + Carbon_2_onSite      (:) - Carbon_onSite_2_atmos      (:)
+mo_cbal_cpools.f90:       Cpool_paper       (:) = Cpool_paper       (:) + Carbon_2_paper       (:) - Carbon_paper_2_atmos       (:)
+mo_cbal_cpools.f90:       Cpool_construction(:) = Cpool_construction(:) + Carbon_2_construction(:) - Carbon_construction_2_atmos(:)
+mo_cbal_cpools.f90:       C2atmos(:) = Carbon_onSite_2_atmos(:) + Carbon_paper_2_atmos(:) + Carbon_construction_2_atmos(:)
+mo_cbal_cpools.f90:! Determine loss of carbon from living vegetation pools (green, reserve, wood) and above ground litter pools
+mo_cbal_cpools.f90:! Update of anthropogenic pools: add carbon from shrinking tiles (living vegetation and above ground litter),
+mo_cbal_cpools.f90:! substract carbon from anthro pools due to decay (this is put into the atmosphere)
+mo_cbal_cpools.f90:! ATTENTION ! Only the anthro pools are changed here. All other carbon pools are unchanged (intent(in)),
+mo_cbal_cpools.f90:! ATTENTION ! Only the above ground carbon lost from living vegetation pools (green, reserve, wood) is put in the anthro pools
+mo_cbal_cpools.f90:! AATENTION ! the below ground carbon lost from living vegetation pools has still to be handled.
+mo_cbal_cpools.f90:                                            ! flux of carbon lost from living biomass pools
+mo_cbal_cpools.f90:!!$                                            ! flux of carbon lost from Cbalance above ground litter pools 
+mo_cbal_cpools.f90:!!$                                            ! flux of carbon lost from YASSO above ground litter pools
+mo_cbal_cpools.f90:    Cpool_green(:,:), Cpool_reserve(:,:), Cpool_wood(:,:)     ! Carbon pools of living material
+mo_cbal_cpools.f90:    Cpool_litter_green_ag(:,:), Cpool_litter_wood_ag(:,:)     !   Above ground carbon litter pools
+mo_cbal_cpools.f90:    YCpool_acid_ag1(:,:), YCpool_water_ag1(:,:),           &  !   Above ground carbon litter pools
+mo_cbal_cpools.f90:    YCpool_ethanol_ag1(:,:), YCpool_nonsoluble_ag1(:,:),   &  !   Above ground carbon litter pools
+mo_cbal_cpools.f90:    YCpool_acid_ag2(:,:), YCpool_water_ag2(:,:),           &  !   Above ground carbon litter pools
+mo_cbal_cpools.f90:    YCpool_ethanol_ag2(:,:), YCpool_nonsoluble_ag2(:,:)       !   Above ground carbon litter pools
+mo_cbal_cpools.f90:    Cpool_onSite(:), Cpool_paper(:), Cpool_construction(:)    ! Anthropogenic carbon pools
+mo_cbal_cpools.f90:    C_2_onSite(:), C_2_paper(:), C_2_construction(:),      &  ! Carbon floating into anthropogenic pools
+mo_cbal_cpools.f90:    C_onSite_2_atmos(:),C_paper_2_atmos(:),C_Construction_2_atmos(:), & ! Carbon from anthropogenic pools to atmosphere
+mo_cbal_cpools.f90:    C_2_atmos(:)                                              ! Total carbon floating from anthropogenic pools to atmosphere
+mo_cbal_cpools.f90:    C_green_loss(:,:),                                     &  ! Carbon lost from green pool
+mo_cbal_cpools.f90:    C_wood_loss(:,:),                                      &  ! Carbon lost from wood pool
+mo_cbal_cpools.f90:    C_reserve_loss(:,:)                                       ! Carbon lost from reserve pool
+mo_cbal_cpools.f90:!!$    C_litter_green_ag_loss(:,:),                           &  ! Carbon lost from green litter pool above ground
+mo_cbal_cpools.f90:!!$    C_litter_wood_ag_loss(:,:),                            &  ! Carbon lost from green litter pool above ground
+mo_cbal_cpools.f90:!!$    C_acid_ag1_loss(:,:),                                  &  ! Carbon lost from acid soluble pool above ground
+mo_cbal_cpools.f90:!!$    C_water_ag1_loss(:,:),                                 &  ! Carbon lost from water soluble pool above ground
+mo_cbal_cpools.f90:!!$    C_ethanol_ag1_loss(:,:),                               &  ! Carbon lost from ethanol soluble pool above ground
+mo_cbal_cpools.f90:!!$    C_nonsoluble_ag1_loss(:,:),                            &  ! Carbon lost from non soluble pool above ground
+mo_cbal_cpools.f90:!!$    C_acid_ag2_loss(:,:),                                  &  ! Carbon lost from acid soluble pool above ground
+mo_cbal_cpools.f90:!!$    C_water_ag2_loss(:,:),                                 &  ! Carbon lost from water soluble pool above ground
+mo_cbal_cpools.f90:!!$    C_ethanol_ag2_loss(:,:),                               &  ! Carbon lost from ethanol soluble pool above ground
+mo_cbal_cpools.f90:!!$    C_nonsoluble_ag2_loss(:,:)                                ! Carbon lost from non soluble pool above ground
+mo_cbal_cpools.f90:    ! calculate loss of carbon from living biomass pools due to land cover change
+mo_cbal_cpools.f90:!!$    ! calculate loss of carbon from above ground litter pools
+mo_cbal_cpools.f90:      ! Carbon loss to atmosphere
+mo_cbal_cpools.f90:    ! pass back the variables specifying the loss of carbon if requested by the calling routine
+mo_cbal_cpools.f90:    !! Yasso - Soil carbon model (Jari Liski)
+mo_cbal_cpools.f90:    !! model to calculate the amount of soil organic carbon, changes in the amount of soil organic carbon and
+mo_cbal_cpools.f90:    !!!!!!! START CALCULATION OF SOIL CARBON !!!!!!!!!!!
+mo_cbal_cpools.f90:       ! 1. flux for immobilisation: this is the sum of all carbon coming from the non-humus pools to humus
+mo_cbalone_io.f90:       netcdfInfo(n)%varName = "carbon_2_GreenLitterPools"
+mo_cbalone_io.f90:       netcdfInfo(n)%array_box => disturbance%carbon_2_GreenLitterPools
+mo_cbalone_io.f90:       netcdfInfo(n)%varName = "carbon_2_WoodLitterPools"
+mo_cbalone_io.f90:       netcdfInfo(n)%array_box => disturbance%carbon_2_WoodLitterPools
+mo_cbalone_io.f90:!       netcdfInfo(n)%varName = "carbon_2_atmos"
+mo_cbalone_io.f90:!       netcdfInfo(n)%array_box => disturbance%carbon_2_atmos
+mo_cbalone_io.f90:           netcdfInfo(n)%varName = "avg_carbon_2_atmos"
+mo_cbalone_io.f90:           netcdfInfo(n)%array_tiles => fire_TH_diag%avg_carbon_2_atmos
+mo_bethy.f90:          net_assimilation,               & ! Canopy net carbon assimilation [MOL(CO2)/m^2 s] (mean value)
+mo_bethy.f90:          net_assimilation,               & ! Canopy net carbon assimilation [MOL(CO2)/m^2 s] (mean value)
+mo_bethy.f90:    CALL add(IO_bethy, 'net_assimilation_acc',       bethy%net_assimilation,        longname='Canopy Net Carbon Assimilation', &
+mo_bethy.f90:    CALL add(IO_diag, 'net_assimilation',      bethy_diag%net_assimilation,      longname='Canopy Net Carbon Assimilation (avg.)', &
+mo_cbalone_memory.f90:  public :: initializePools       !! reads initial carbon pools from filepack
+mo_cbalone_memory.f90:  public :: initCbalance          !! initializes the structure "cbalance" (except carbon pools)
+mo_cbalone_memory.f90:     real(dp),pointer :: box_Cpools_total(:)            !! Sum of all carbon pools [mol(C)/m^2(grid box)]
+mo_cbalone_memory.f90:     real(dp),pointer :: avg_YCpool_humus_1(:,:)          !!     for slow carbon compartment [mol(C)/m²(grid box)]
+mo_cbalone_memory.f90:     real(dp),pointer :: avg_YCpool_humus_2(:,:)          !!     for slow carbon compartment [mol(C)/m²(grid box)]
+mo_cbalone_memory.f90:     real(dp),pointer :: avg_excess_NPP(:,:)          !! That part of NPP that could not be stored in the carbon pools of the living
+mo_cbalone_memory.f90:     real(dp),pointer :: testCconserv(:,:)            !! Array for testing of Carbon conservation. Should be zero if Carbon is 
+mo_cbalone_memory.f90:     real(dp),pointer :: testNconserv(:,:)     !! Array for testing of Nitrogen conservation. Should be zero if Carbon is conserved.
+mo_cbalone_memory.f90:          ! most carbon pools have at least 3 dimensions (lon, lat, tiles)
+mo_cbalone_memory.f90:          ! LCC carbon pools only have 2 dimensions (lon, lat)
+mo_cbalone_memory.f90:       write(*,*) "initializePools(): Carbon pools read in. Took values from last time step ",noTimeSteps," found in file."
+mo_cbalone_memory.f90:       !! Initialize nitrogen pools consistently with carbon pools          ! brp
+mo_cbalone_memory.f90:  ! Initializes yasso carbon pools from a file (any output file from simulation using yasso can be taken as initialization file)
+mo_cbalone_memory.f90:  ! If carbon pools are read in from a file, they must be in LatLon format, packed format is currently not
+mo_cbalone_memory.f90:          if (nvardim(i) >= 3) then  ! carbon pools have at least 3 dimensions (lon, lat, tiles)
+mo_cbalone_memory.f90:       write(*,*) "initializeYassoPools(): Carbon pools read in. Took values from last time step ",noTimeSteps," found in file."
+Binary file mo_jsbach.o matches
+mo_disturbance.f90:USE mo_cbal_cpools,          ONLY: relocate_carbon_fire, relocate_carbon_damage
+mo_disturbance.f90:USE mo_disturbance_thonicke, ONLY: burned_frac_thonicke,init_fire_thonicke,init_fire_thonicke_memory,relocate_carbon_fire_thonicke
+mo_disturbance.f90:REAL(dp), PARAMETER, PRIVATE :: def_fire_frac_wood_2_atmos =  0.2_dp  !! fraction of wood carbon emitted to the atm by fire
+mo_disturbance.f90:  REAL(dp), POINTER   :: carbon_2_GreenLitterPools(:)
+mo_disturbance.f90:  REAL(dp), POINTER   :: carbon_2_WoodLitterPools(:)
+mo_disturbance.f90:  REAL(dp), POINTER   :: carbon_2_atmos(:)
+mo_disturbance.f90:  REAL(dp), POINTER   :: carbon_2_atmos_tiled(:,:)
+mo_disturbance.f90:PUBLIC relocate_disturbed_carbon
+mo_disturbance.f90:               disturbance%carbon_2_GreenLitterPools(grid%nland),                &
+mo_disturbance.f90:               disturbance%carbon_2_WoodLitterPools (grid%nland),                &
+mo_disturbance.f90:               disturbance%carbon_2_atmos           (grid%nland),                &
+mo_disturbance.f90:                 disturbance%carbon_2_atmos_tiled    (grid%nland,surface%ntiles))
+mo_disturbance.f90:        disturbance%carbon_2_atmos_tiled     (:,:) = 0._dp
+mo_disturbance.f90:      disturbance%carbon_2_GreenLitterPools  (:)   = 0._dp
+mo_disturbance.f90:      disturbance%carbon_2_WoodLitterPools   (:)   = 0._dp
+mo_disturbance.f90:      disturbance%carbon_2_atmos             (:)   = 0._dp
+mo_disturbance.f90:    CALL add(IO_disturbance,'dist_carbon_2_GreenLitterPools', disturbance%carbon_2_GreenLitterPools, lpost=.false., &
+mo_disturbance.f90:    CALL add(IO_disturbance,'dist_carbon_2_WoodLitterPools', disturbance%carbon_2_WoodLitterPools, lpost=.false., &
+mo_disturbance.f90:    CALL add(IO_disturbance,'dist_carbon_2_atmos', disturbance%carbon_2_atmos, &
+mo_disturbance.f90:    CALL add(IO_dist_diag,'dist_carbon_2_atmos_tiled', disturbance%carbon_2_atmos_tiled, &
+mo_disturbance.f90:    disturbance%carbon_2_GreenLitterPools (:)   = 0._dp
+mo_disturbance.f90:    disturbance%carbon_2_WoodLitterPools  (:)   = 0._dp
+mo_disturbance.f90:    disturbance%carbon_2_atmos            (:)   = 0._dp
+mo_disturbance.f90:      disturbance%carbon_2_atmos_tiled    (:,:) = 0._dp
+mo_disturbance.f90:! ---- relocate_disturbed_carbon ----------------------------------------------------
+mo_disturbance.f90:! Driver for calculation carbon relocation caused by disturbances
+mo_disturbance.f90:  SUBROUTINE relocate_disturbed_carbon(lctlib, surface, nidx, kidx0, kidx1, ntiles, &
+mo_disturbance.f90:  ! carbon fluxes
+mo_disturbance.f90:  REAL(dp), POINTER, DIMENSION(:)    ::  carbon_2_GreenLitterPools
+mo_disturbance.f90:  REAL(dp), POINTER, DIMENSION(:)    ::  carbon_2_WoodLitterPools
+mo_disturbance.f90:  REAL(dp), POINTER, DIMENSION(:)    ::  carbon_2_atmos
+mo_disturbance.f90:  REAL(dp), DIMENSION(nidx,ntiles)   ::  carbon_2_atmos_tiled
+mo_disturbance.f90:    carbon_2_GreenLitterPools => disturbance%carbon_2_GreenLitterPools(kidx0:kidx1)
+mo_disturbance.f90:    carbon_2_WoodLitterPools  => disturbance%carbon_2_WoodLitterPools (kidx0:kidx1)
+mo_disturbance.f90:      carbon_2_atmos_tiled(:,:) = disturbance%carbon_2_atmos_tiled(kidx0:kidx1,:)
+mo_disturbance.f90:      carbon_2_atmos_tiled(:,:) = 0._dp
+mo_disturbance.f90:    carbon_2_atmos            => disturbance%carbon_2_atmos           (kidx0:kidx1)
+mo_disturbance.f90:              CALL relocate_carbon_fire(nidx, ntiles, with_yasso, dist_opts%ldiag,&
+mo_disturbance.f90:                carbon_2_GreenLitterPools(:), carbon_2_WoodLitterPools(:),        &
+mo_disturbance.f90:                carbon_2_atmos_tiled(:,:),    carbon_2_atmos(:),                  &
+mo_disturbance.f90:              CALL relocate_carbon_fire(nidx,ntiles,with_yasso,dist_opts%ldiag, &
+mo_disturbance.f90:                carbon_2_GreenLitterPools(:), carbon_2_WoodLitterPools(:),      &
+mo_disturbance.f90:                carbon_2_atmos_tiled(:,:),    carbon_2_atmos(:),                &
+mo_disturbance.f90:              CALL relocate_carbon_fire(nidx,ntiles,with_yasso,dist_opts%ldiag, &
+mo_disturbance.f90:                carbon_2_GreenLitterPools(:),carbon_2_WoodLitterPools(:),       &
+mo_disturbance.f90:                carbon_2_atmos_tiled(:,:), carbon_2_atmos(:),                   &
+mo_disturbance.f90:              CALL relocate_carbon_fire(nidx,ntiles,with_yasso,dist_opts%ldiag, &
+mo_disturbance.f90:                carbon_2_GreenLitterPools(:),carbon_2_WoodLitterPools(:),       &
+mo_disturbance.f90:                carbon_2_atmos_tiled(:,:), carbon_2_atmos(:),                   &
+mo_disturbance.f90:        CASE (3) !! relocation of carbon according to the spitfire algorithm
+mo_disturbance.f90:              CALL relocate_carbon_fire_thonicke(lctlib,surface,nidx,kidx0,ntiles,with_yasso,with_nitrogen, &
+mo_disturbance.f90:                carbon_2_GreenLitterPools(:), carbon_2_WoodLitterPools(:),        &
+mo_disturbance.f90:                carbon_2_atmos_tiled(:,:), carbon_2_atmos(:),                     &
+mo_disturbance.f90:              CALL relocate_carbon_fire_thonicke(lctlib,surface, nidx,kidx0,ntiles,with_yasso,with_nitrogen, &
+mo_disturbance.f90:                carbon_2_GreenLitterPools(:), carbon_2_WoodLitterPools(:),      &
+mo_disturbance.f90:                carbon_2_atmos_tiled(:,:), carbon_2_atmos(:),                   &
+mo_disturbance.f90:              CALL relocate_carbon_fire_thonicke(lctlib,surface, nidx,kidx0,ntiles,with_yasso,with_nitrogen, &
+mo_disturbance.f90:                carbon_2_GreenLitterPools(:), carbon_2_WoodLitterPools(:), & 
+mo_disturbance.f90:                carbon_2_atmos_tiled(:,:), carbon_2_atmos(:),              &
+mo_disturbance.f90:              CALL relocate_carbon_fire_thonicke(lctlib,surface, nidx,kidx0,ntiles,with_yasso,with_nitrogen, &
+mo_disturbance.f90:                carbon_2_GreenLitterPools(:), carbon_2_WoodLitterPools(:), & 
+mo_disturbance.f90:                carbon_2_atmos_tiled(:,:), carbon_2_atmos(:),              &
+mo_disturbance.f90:          CALL finish('relocate_disturbed_carbon','Unknown fire algorithm')
+mo_disturbance.f90:              curr%specie_sum(kidx0:kidx0+nidx-1) + disturbance%carbon_2_atmos(kidx0:kidx1) * cover_fract(:,j)    &
+mo_disturbance.f90:              CALL relocate_carbon_damage(nidx, ntiles, with_yasso,        &
+mo_disturbance.f90:                carbon_2_GreenLitterPools(:), carbon_2_WoodLitterPools(:), &
+mo_disturbance.f90:              CALL relocate_carbon_damage(nidx, ntiles, with_yasso,        &
+mo_disturbance.f90:                carbon_2_GreenLitterPools(:), carbon_2_WoodLitterPools(:), &
+mo_disturbance.f90:              CALL relocate_carbon_damage(nidx, ntiles, with_yasso,        &
+mo_disturbance.f90:                carbon_2_GreenLitterPools(:), carbon_2_WoodLitterPools(:), &
+mo_disturbance.f90:              CALL relocate_carbon_damage(nidx, ntiles, with_yasso,        &
+mo_disturbance.f90:                carbon_2_GreenLitterPools(:), carbon_2_WoodLitterPools(:), &
+mo_disturbance.f90:          CALL finish('relocate_disturbed_carbon','Unknown windbreak algorithm')
+mo_disturbance.f90:  END SUBROUTINE relocate_disturbed_carbon
+mo_disturbance.f90:! carbon tranfers.
+mo_disturbance.f90:      ! Calculate carbon relocation connected with damages and fires
+mo_disturbance.f90:      ! Attention: the routine relocate_disturbed_carbon updates flux variables of disturbance type, although these are not 
+mo_disturbance.f90:      ! Attention: calling frequence matters (e.g. for calculation of carbon_2_GreenLitterPools and carbon_2_WoodLitterPools)
+mo_disturbance.f90:      CALL relocate_disturbed_carbon(lctlib, surface, nidx, kidx0, kidx1, surface%ntiles,                    &
+mo_disturbance.f90:      CALL relocate_disturbed_carbon(lctlib, surface, nidx, kidx0, kidx1, surface%ntiles,                    &
+mo_disturbance.f90:      disturbance%carbon_2_GreenLitterPools(kidx0:kidx1) = disturbance%carbon_2_GreenLitterPools(kidx0:kidx1) &
+mo_disturbance.f90:      disturbance%carbon_2_WoodLitterPools(kidx0:kidx1)  = disturbance%carbon_2_WoodLitterPools (kidx0:kidx1) &
+mo_disturbance.f90:      disturbance%carbon_2_atmos(kidx0:kidx1) =  disturbance%carbon_2_atmos(kidx0:kidx1) * surface%veg_ratio_max(kidx0:kidx1)
+mo_disturbance.f90:                                                    + disturbance%carbon_2_atmos(kidx0:kidx1) * molarMassCO2_kg
+mo_disturbance.f90:        disturbance%box_C_flux_2_atmos_tiled(kidx0:kidx1,:) + disturbance%carbon_2_atmos_tiled(kidx0:kidx1,:) * molarMassC_kg &
+mo_disturbance.f90:    CO2_emission(:) = disturbance%carbon_2_atmos(kidx0:kidx1)   * molarMassCO2_kg/86400._dp
+cbalone_driver.f90:!!   for running the carbon and nitrogen pool model offline   !!
+cbalone_driver.f90:!! Tea Thum, FMI     Oct 2012: first implementation of YASSO soil carbon model (J. Liski, EFI)
+cbalone_driver.f90:!! Daniel Goll, MPI  May 2013: implementation of YASSO soil carbon model
+cbalone_driver.f90:  ! --- Control of initialization of carbon pools (options read in from run.def)
+cbalone_driver.f90:  character(len=1024) :: cpool_file_name     !! file name, including path, for initial data of the carbon pools
+cbalone_driver.f90:  logical             :: with_nitrogen        !! true if besides carbon als nitrogen is cycled  
+cbalone_driver.f90:  real(dp),allocatable,dimension(:)    ::  carbon_2_atmos, carbon_2_litterGreenPools
+cbalone_driver.f90:  real(dp),allocatable,dimension(:)    ::  carbon_2_litterWoodPool_ag, carbon_2_litterWoodPool_bg
+cbalone_driver.f90:  read_cpools=.FALSE.      !! false: Carbon pools are initialized with zero
+cbalone_driver.f90:                           !! true: Carbon pools initialized from an external file
+cbalone_driver.f90:  init_npools=.FALSE.      !! true: Nitrogen pools are initialized consistent with carbon pools
+cbalone_driver.f90:     WRITE(*,*) "Init file for carbon pools: ",TRIM(cpool_file_name)
+cbalone_driver.f90:  IF (lcc_scheme==1)   WRITE(*,*) "This is a run with lcc carbon allocation following JSBACH standard"
+cbalone_driver.f90:       "This is a run with lcc carbon allocation following the Grand Slam Protocol (Houghton et al., 1983)"
+cbalone_driver.f90:  allocate(carbon_2_atmos(1:grid%nland))
+cbalone_driver.f90:  allocate(carbon_2_litterGreenPools(1:grid%nland))
+cbalone_driver.f90:  allocate(carbon_2_litterWoodPool_ag(1:grid%nland))
+cbalone_driver.f90:  allocate(carbon_2_litterWoodPool_bg(1:grid%nland))
+cbalone_driver.f90:              !! remember total carbon and nitrogen for testing C and N conservation
+cbalone_driver.f90:              !! Prepare for test of Carbon conservation across update Cpools by remembering the sum of the Carbon pools at the
+cbalone_driver.f90:              ELSE !! Carbon-only mode
+cbalone_driver.f90:              !! Update Carbon and Nitrogen conservation test 
+cbalone_driver.f90:                     + cbalance%soil_respiration(:,:)      * 86400._dp  &  !! ... minus Carbon lost to atmosph.
+cbalone_driver.f90:                 carbon_2_atmos(:) =  (CO2_emission_landcover_change(:) + CO2_emission_harvest(:) + CO2_flux_dynveg(:)) &
+cbalone_driver.f90:                 carbon_2_atmos(:)   = 0._dp
+cbalone_driver.f90:                                                - carbon_2_atmos(:)                                                       &
+cbalone_driver.f90:                                                            + carbon_2_atmos(:) * molarMassCO2_kg / 86400._dp
+cbalone_driver.f90:  DEALLOCATE(carbon_2_atmos, carbon_2_litterGreenPools, carbon_2_litterWoodPool_ag, carbon_2_litterWoodPool_bg)
+cbalone_driver.f90:          fire_TH_diag%avg_carbon_2_atmos            (:,:) = fire_TH_diag%avg_carbon_2_atmos            (:,:) / OutPer
+cbalone_driver.f90:          fire_TH_diag%avg_carbon_2_atmos            (:,:) = 0.0_dp
