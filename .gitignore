@@ -1,0 +1,23 @@
+# NetCDF
+*.nc
+
+# Figures
+*.png
+*.jpg
+*.jpeg
+*.pdf
+
+# Temporary files
+*.swp
+*.swo
+
+# Compiled files
+*.out
+a.out
+
+# Python
+__pycache__/
+*.pyc
+
+# Mac
+.DS_Store
