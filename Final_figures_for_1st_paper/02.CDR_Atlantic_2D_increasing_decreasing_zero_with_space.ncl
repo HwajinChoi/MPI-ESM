@@ -106,8 +106,10 @@ res@tmYLLabelFontHeightF=0.04
 res@tiYAxisFontHeightF=0.04
 
 res@cnInfoLabelOn          =   False
-res@cnLineLabelsOn         =       False
-res@cnLinesOn=False
+res@cnLineLabelsOn         =      True 
+res@gsnContourZeroLineThicknessF = 2.          ; doubles thickness of zero contour
+res@gsnContourNegLineDashPattern=2
+res@cnLinesOn=True
 res@cnFillOn             = True                 ; turn on color fill
 res@cnFillPalette        = "GMT_polar"
 res@cnMissingValFillColor="black"

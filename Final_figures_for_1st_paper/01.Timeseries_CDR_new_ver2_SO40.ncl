@@ -38,6 +38,8 @@ files3=systemfunc("ls "+dir3+"test_pictrl_preform_001_spinup_dissic_invent_*"+la
 f3=addfiles(files3,"r")
 ListSetType(f3,"join")
 flt_pi_org=f3[:]->dissic
+printVarSummary(flt_pi_org)
+exit
 flt_pi=flt_pi_org(:,:,0,0)
 
 flt_pi_an=dim_avg_n_Wrap(flt_pi,1)
@@ -162,7 +164,7 @@ plot=new(8,graphic)
  res@xyLineThicknessF= 2
  res@tiYAxisString       =       "SST [~S~o~N~C]"
  plot(1)=gsn_csm_xy(wks,year,sst(2,:),res)
- res@gsnLeftString="(c) "
+ res@gsnLeftString="(d) "
  res@trYMinF       = 0
  res@trYMaxF       =  1500
  res@trXMinF       = 0
@@ -171,7 +173,7 @@ plot=new(8,graphic)
  res@xyLineThicknessF=6
  res@tiYAxisString       =       "Cumulative E [PgC]"
  res@tiXAxisString       =       "Oceean Carbon Sink [PgC]"
- plot(2)=gsn_csm_xy(wks,OCE(2,:),E_cum(2,:),res)
+ plot(3)=gsn_csm_xy(wks,OCE(2,:),E_cum(2,:),res)
  res@tiYAxisString       =       "Ocean Carbon Storage [PgC]"
  res@tiXAxisString       =       "Simulation years"
  res@gsnLeftString="(e) "
@@ -200,8 +202,8 @@ plot=new(8,graphic)
  res@xyLineThicknessF= 2
  res@trYMinF       = 12.
  res@tiYAxisString       =       "AMOC [Sv]"
- res@gsnLeftString="(d) "
- plot(3)=gsn_csm_xy(wks,year,MOC,res)
+ res@gsnLeftString="(c) "
+ plot(2)=gsn_csm_xy(wks,year,MOC,res)
 
  gres = True
  gres@YPosPercent = 94.

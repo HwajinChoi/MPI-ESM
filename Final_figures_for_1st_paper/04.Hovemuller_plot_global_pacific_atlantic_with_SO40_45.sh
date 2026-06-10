@@ -1,4 +1,6 @@
 #!/bin/bash
+# export NCARG_COLORMAPS=/work/uo1451/m301158/MPI-ESM/code/Final_figures_for_1st_paper:$NCARG_ROOT/lib/ncarg/colormaps/
+
 
 for S in 40 45 ;do
 
@@ -321,10 +323,12 @@ res@cnLevelSelectionMode="ManualLevels"
 res@cnFillOn              = True     ; turn on color fill
 res@cnLinesOn             = False    ; turn of contour lines
 res@cnLineLabelsOn        = False    ; turn of contour line labels
-res@cnFillPalette         = "GMT_polar"
+res@cnFillPalette         = "test_jin"
 res@tmYLMode              = "Automatic"
-res@gsnCenterStringFontHeightF= 0.060
-res@gsnCenterStringOrthogonalPosF=0.10
+;res@gsnCenterStringFontHeightF= 0.060
+;res@gsnCenterStringOrthogonalPosF=0.10
+res@gsnLeftStringFontHeightF= 0.060
+res@gsnLeftStringOrthogonalPosF=0.10
 res@tmXBLabelFontHeightF=0.04
 res@tmYLLabelFontHeightF=0.04
 res@tiYAxisFontHeightF=0.05
@@ -342,8 +346,8 @@ res@cnInfoLabelOn          =   False
 
 res@cnLevelSelectionMode   =       "ManualLevels"
 res@cnMaxLevelValF         =     100
-res@cnMinLevelValF         =     -100
-res@cnLevelSpacingF        =      20
+res@cnMinLevelValF         =     -40
+res@cnLevelSpacingF        =      10
 
 dim0=dimsizes(ocean_dic_cdr_an_diff)
 
@@ -362,38 +366,49 @@ plx2=300.
 
 res@tiYAxisString=""
 res@tmXBLabelsOn        = False
-res@gsnCenterString="(a) DIC~B~tot~N~"
+res@gsnLeftString="(a)"
 plot(0)   = gsn_csm_contour(wks,ocean_dic_cdr_an_diff, res)
 res@tiYAxisString=""
 res@tmYLLabelsOn        = False
-res@gsnCenterString="(b) DIC~B~ant~N~"
+res@gsnLeftString="(b)"
 plot(1)   = gsn_csm_contour(wks,ocean_dicant_cdr_an, res)
-res@gsnCenterString="(c) DIC~B~nat~N~"
+res@gsnLeftString="(c)"
 plot(2)   = gsn_csm_contour(wks,ocean_dicnat_cdr_an_diff, res)
-res@gsnCenterString="(d) DIC~B~reg~N~"
+res@gsnLeftString="(d)"
 plot(3)   = gsn_csm_contour(wks,reg_ocean_dic_cdr_an_diff, res)
-res@gsnCenterString=""
+res@gsnLeftString="(e)"
 res@tmYLLabelsOn        = True
 plot(4)   = gsn_csm_contour(wks,pac_dic_cdr_an_diff, res)
 res@tiYAxisString=""
 res@tmYLLabelsOn        = False
+res@gsnLeftString="(f)"
 plot(5)   = gsn_csm_contour(wks,pac_dicant_cdr_an, res)
+res@gsnLeftString="(g)"
 plot(6)   = gsn_csm_contour(wks,pac_dicnat_cdr_an_diff, res)
+res@gsnLeftString="(h)"
 plot(7)   = gsn_csm_contour(wks,reg_pac_dic_cdr_an_diff, res)
 res@tmYLLabelsOn        = True
+res@gsnLeftString="(i)"
 plot(8)   = gsn_csm_contour(wks,atl_dic_cdr_an_diff, res)
 res@tiYAxisString=""
 res@tmYLLabelsOn        = False
+res@gsnLeftString="(j)"
 plot(9)   = gsn_csm_contour(wks,atl_dicant_cdr_an, res)
+res@gsnLeftString="(k)"
 plot(10)   = gsn_csm_contour(wks,atl_dicnat_cdr_an_diff, res)
+res@gsnLeftString="(l)"
 plot(11)   = gsn_csm_contour(wks,reg_atl_dic_cdr_an_diff, res)
 res@tiXAxisString="Year"
 res@tmXBLabelsOn        = True
 res@tmYLLabelsOn        = True
+res@gsnLeftString="(m)"
 plot(12)   = gsn_csm_contour(wks,SO_dic_cdr_an_diff, res)
+res@gsnLeftString="(n)"
 res@tmYLLabelsOn        = False
 plot(13)   = gsn_csm_contour(wks,SO_dicant_cdr_an, res)
+res@gsnLeftString="(o)"
 plot(14)   = gsn_csm_contour(wks,SO_dicnat_cdr_an_diff, res)
+res@gsnLeftString="(p)"
 plot(15)   = gsn_csm_contour(wks,reg_SO_dic_cdr_an_diff, res)
 
 dum0=gsn_add_polyline(wks,plot(0),plx,depth,plres)
@@ -461,6 +476,14 @@ gsn_text_ndc(wks,"Depth",0.08,0.78,txres3)
 txres2               = True
 txres2@txFontHeightF = 0.012
 gsn_text_ndc(wks,"[mmol/m~S~3~N~]",0.95,0.16,txres2)
+
+txres4               = True
+txres4@txFontHeightF = 0.016
+gsn_text_ndc(wks,"DIC~B~tot~N~",0.20,0.82,txres4)
+gsn_text_ndc(wks,"DIC~B~ant~N~",0.425,0.82,txres4)
+gsn_text_ndc(wks,"DIC~B~nat~N~",0.65,0.82,txres4)
+gsn_text_ndc(wks,"DIC~B~reg~N~",0.875,0.82,txres4)
+
 gsn_panel(wks,plot,(/4,4/),pres)
 frame(wks)
 end
