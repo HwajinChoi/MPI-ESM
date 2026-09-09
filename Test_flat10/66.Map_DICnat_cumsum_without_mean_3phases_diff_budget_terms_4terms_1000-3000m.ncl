@@ -72,7 +72,7 @@ res@cnFillPalette        = "GMT_polar"
 res@cnLevelSelectionMode   =       "ManualLevels"
 res@mpProjection ="Robinson"
 res@mpPerimOn = False
-res@mpCenterLonF =180
+res@mpCenterLonF =-50
 res@cnMissingValFillColor="gray"
 res@mpLandFillColor    =   "gray"
 
@@ -98,7 +98,7 @@ res@gsnCenterString="Advection"
 plot(1)  = gsn_csm_contour_map(wks, Middle_First(1,:,:),res )   ; plaace holder
 res@gsnCenterString="Source&sink"
 plot(2)  = gsn_csm_contour_map(wks,Middle_First(2,:,:), res )   ; plaace holder
-res@gsnCenterString="Residual"
+res@gsnCenterString="Diffusion"
 res@lbLabelBarOn           = True
 plot(3)  = gsn_csm_contour_map(wks, Middle_First(3,:,:), res )   ; plaace holder
 
