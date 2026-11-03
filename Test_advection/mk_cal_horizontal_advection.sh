@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for year in $(seq 1851 2299);do
+for year in $(seq 1850 1850);do
 
 cat << EOF > ./imsi.ncl
 
@@ -19,6 +19,10 @@ begin
   ; Grid distances (m)
   dx = g->dlxu(0,0,:,:)
   dy = g->dlyv(0,0,:,:)
+print("dx")
+printMinMax(dx, True)
+print("dy")
+printMinMax(dy, True)
 
   terms = (/"meanCprime", "primeCmean", "primeCprime"/)
 
@@ -66,8 +70,21 @@ begin
 
     dvdy(:,:,1:ny-1,:) = (fv(:,:,1:ny-1,:) - fv(:,:,0:ny-2,:)) / conform_dims(sz_y, dy(1:ny-1,:), (/2,3/))
 
+; ========================================
+; DEBUG: Check values before divergence sum
+; ========================================
+print("===== " + term + " =====")
+
+printMinMax(fu, True)
+printMinMax(fv, True)
+
+printMinMax(dudx, True)
+printMinMax(dvdy, True)
+
     ; Horizontal advection tendency
     adv = -(dudx + dvdy)
+printMinMax(adv, True)
+exit
 
     adv@long_name = "Approximate horizontal advection: " + term
     adv@units = "mol m-3 s-1"

@@ -14,8 +14,8 @@ for year in $(seq 1850 2299); do
  B2=${dir1}/DIC_vertical_advection_r192x96_mul_dz_1000-3000m_${year}.nc
  B3=${dir1}/DIC_vertical_advection_r192x96_mul_dz_3000-6000m_${year}.nc
 
- cdo -s -yearmean -mul ${dir3}/ddpo_org.nc ${A} ${dir1}/imsi1.nc
- cdo -s -yearmean -mul ${dir3}/ddpo_org.nc ${B} ${dir1}/imsi2.nc
+ cdo -s -yearmean -setctomiss,-9e33 -mul ${dir3}/ddpo_org.nc ${A} ${dir1}/imsi1.nc
+ cdo -s -yearmean -setctomiss,-9e33 -mul ${dir3}/ddpo_org.nc ${B} ${dir1}/imsi2.nc
 
  cdo -s -f nc -remapbil,r192x96 -selindexbox,2,255,2,219 -vertsum -sellevel,3070,3395,3770,4195,4670,5170,5720 ${dir1}/imsi1.nc  ${A3} 
  echo ${A3}
