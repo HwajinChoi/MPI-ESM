@@ -77,7 +77,8 @@ res@cnMissingValFillColor="gray"
 res@mpLandFillColor    =   "gray"
 
 res@gsnCenterStringFontHeightF= 0.045
-res@gsnCenterStringOrthogonalPosF=0.1
+res@gsnLeftStringFontHeightF= 0.043
+res@gsnCenterStringOrthogonalPosF=0.15
 res@tmXBLabelFontHeightF=0.04
 res@tmYLLabelFontHeightF=0.04
 res@tiYAxisFontHeightF=0.04
@@ -85,7 +86,6 @@ res@lbOrientation="vertical"
 
 res@cnFillPalette        = "GMT_polar"
 res@gsnCenterString="Tendency"
-res@gsnLeftString=""
 res@gsnRightString=""
 res@cnMaxLevelValF         =     120
 res@cnMinLevelValF         =     -120
@@ -93,41 +93,54 @@ res@cnLevelSpacingF        =      20
 ;printMinMax(Inc_avg(0,:,:),0)
 ;exit
 res@lbLabelBarOn           = False
+res@gsnLeftString="(a)"
 plot(0)  = gsn_csm_contour_map(wks, Middle_First(0,:,:), res )   ; plaace holder
+res@gsnLeftString="(b)"
 res@gsnCenterString="Advection"
 plot(1)  = gsn_csm_contour_map(wks, Middle_First(1,:,:),res )   ; plaace holder
+res@gsnLeftString="(c)"
 res@gsnCenterString="Source&sink"
 plot(2)  = gsn_csm_contour_map(wks,Middle_First(2,:,:), res )   ; plaace holder
 res@gsnCenterString="Diffusion"
 res@lbLabelBarOn           = True
+res@gsnLeftString="(d)"
 plot(3)  = gsn_csm_contour_map(wks, Middle_First(3,:,:), res )   ; plaace holder
+delete([/res@gsnCenterStringOrthogonalPosF/])
 
 res@gsnCenterString=""
 res@lbLabelBarOn           = False
+res@gsnLeftString="(e)"
 plot(4)  = gsn_csm_contour_map(wks, Last_Middle(0,:,:), res )   ; plaace holder
 ;res@gsnCenterString="Advection"
+res@gsnLeftString="(f)"
 plot(5)  = gsn_csm_contour_map(wks, Last_Middle(1,:,:),res )   ; plaace holder
 ;res@gsnCenterString="Source&sink"
+res@gsnLeftString="(g)"
 plot(6)  = gsn_csm_contour_map(wks, Last_Middle(2,:,:), res )   ; plaace holder
 ;res@gsnCenterString="Residual"
+res@gsnLeftString="(h)"
 res@lbLabelBarOn           = True
 plot(7)  = gsn_csm_contour_map(wks, Last_Middle(3,:,:), res )   ; plaace holder
 
 ;res@gsnCenterString="Tendency"
 res@lbLabelBarOn           = False
+res@gsnLeftString="(i)"
 plot(8)  = gsn_csm_contour_map(wks, Last2_Last1(0,:,:), res )   ; plaace holder
 ;res@gsnCenterString="Advection"
+res@gsnLeftString="(j)"
 plot(9)  = gsn_csm_contour_map(wks, Last2_Last1(1,:,:),res )   ; plaace holder
 ;res@gsnCenterString="Source&sink"
+res@gsnLeftString="(k)"
 plot(10)  = gsn_csm_contour_map(wks, Last2_Last1(2,:,:), res )   ; plaace holder
 res@lbLabelBarOn           = True
 ;res@gsnCenterString="Residual"
+res@gsnLeftString="(l)"
 plot(11)  = gsn_csm_contour_map(wks, Last2_Last1(3,:,:), res )   ; plaace holder
 
 pres                       =   True
 pres@gsnFrame         = False
 pres@gsnMaximize        =       True
-pres@gsnPanelYWhiteSpacePercent = 15
+pres@gsnPanelYWhiteSpacePercent = 10
 pres@gsnPanelXWhiteSpacePercent = 3
 pres@gsnPanelLeft=0.1
 pres@gsnPanelRight=0.9

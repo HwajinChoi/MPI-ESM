@@ -84,7 +84,13 @@ printMinMax(dvdy, True)
     ; Horizontal advection tendency
     adv = -(dudx + dvdy)
 printMinMax(adv, True)
-exit
+
+if (term.eq."primeCmean") then
+    print("=== primeCmean divergence check ===")
+    printMinMax(dudx, True)
+    printMinMax(dvdy, True)
+    printMinMax(adv, True)
+end if
 
     adv@long_name = "Approximate horizontal advection: " + term
     adv@units = "mol m-3 s-1"

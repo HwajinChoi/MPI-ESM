@@ -32,8 +32,6 @@ end do
 copy_VarCoords(Bud,Bud_ano)
 
 Bud_ano_cumsum=dim_cumsum_n_Wrap(Bud_ano,1,1)
-printVarSummary(Bud_ano_cumsum)
-exit
 
 First=new((/5,dim(1),dim(2)/),typeof(tot))
 Middle=new((/5,dim(1),dim(2)/),typeof(tot))
@@ -79,6 +77,7 @@ res@cnMissingValFillColor="gray"
 res@mpLandFillColor    =   "gray"
 
 res@gsnCenterStringFontHeightF= 0.045
+res@gsnLeftStringFontHeightF= 0.04
 res@gsnCenterStringOrthogonalPosF=0.05
 res@tmXBLabelFontHeightF=0.04
 res@tmYLLabelFontHeightF=0.04
@@ -87,8 +86,7 @@ res@lbOrientation="vertical"
 
 res@cnFillPalette        = "GMT_polar"
 res@lbLabelBarOn           = True
-res@gsnCenterString="Tendency"
-res@gsnLeftString=""
+res@gsnCenterString="(a) Tendency"
 res@gsnRightString=""
 res@cnMaxLevelValF         =     120
 res@cnMinLevelValF         =     -120
@@ -96,33 +94,33 @@ res@cnLevelSpacingF        =      20
 ;printMinMax(Inc_avg(0,:,:),0)
 ;exit
 plot(0)  = gsn_csm_contour_map(wks, Middle_First(0,:,:), res )   ; plaace holder
-res@gsnCenterString="Advection"
+res@gsnCenterString="(b) Advection"
 plot(1)  = gsn_csm_contour_map(wks, Middle_First(1,:,:),res )   ; plaace holder
-res@gsnCenterString="Diffusion"
+res@gsnCenterString="(c) Diffusion"
 plot(2)  = gsn_csm_contour_map(wks,Middle_First(2,:,:), res )   ; plaace holder
-res@gsnCenterString="Source&sink"
+res@gsnCenterString="(d) Source&sink"
 plot(3)  = gsn_csm_contour_map(wks, Middle_First(3,:,:), res )   ; plaace holder
-res@gsnCenterString="Dilution"
+res@gsnCenterString="(e) Dilution"
 plot(4)  = gsn_csm_contour_map(wks, Middle_First(4,:,:), res )   ; plaace holder
-res@gsnCenterString="Tendency"
+res@gsnCenterString="(f) Tendency"
 plot2(0)  = gsn_csm_contour_map(wks, Last_Middle(0,:,:), res )   ; plaace holder
-res@gsnCenterString="Advection"
+res@gsnCenterString="(g) Advection"
 plot2(1)  = gsn_csm_contour_map(wks, Last_Middle(1,:,:),res )   ; plaace holder
-res@gsnCenterString="Diffusion"
+res@gsnCenterString="(h) Diffusion"
 plot2(2)  = gsn_csm_contour_map(wks, Last_Middle(2,:,:), res )   ; plaace holder
-res@gsnCenterString="Source&sink"
+res@gsnCenterString="(i) Source&sink"
 plot2(3)  = gsn_csm_contour_map(wks, Last_Middle(3,:,:), res )   ; plaace holder
-res@gsnCenterString="Dilution"
+res@gsnCenterString="(j) Dilution"
 plot2(4)  = gsn_csm_contour_map(wks, Last_Middle(4,:,:), res )   ; plaace holder
-res@gsnCenterString="Tendency"
+res@gsnCenterString="(k) Tendency"
 plot3(0)  = gsn_csm_contour_map(wks, Last2_Last1(0,:,:), res )   ; plaace holder
-res@gsnCenterString="Advection"
+res@gsnCenterString="(l) Advection"
 plot3(1)  = gsn_csm_contour_map(wks, Last2_Last1(1,:,:),res )   ; plaace holder
-res@gsnCenterString="Diffusion"
+res@gsnCenterString="(m) Diffusion"
 plot3(2)  = gsn_csm_contour_map(wks, Last2_Last1(2,:,:), res )   ; plaace holder
-res@gsnCenterString="Source&sink"
+res@gsnCenterString="(n) Source&sink"
 plot3(3)  = gsn_csm_contour_map(wks, Last2_Last1(3,:,:), res )   ; plaace holder
-res@gsnCenterString="Dilution"
+res@gsnCenterString="(o) Dilution"
 plot3(4)  = gsn_csm_contour_map(wks, Last2_Last1(4,:,:), res )   ; plaace holder
 
 pres                       =   True

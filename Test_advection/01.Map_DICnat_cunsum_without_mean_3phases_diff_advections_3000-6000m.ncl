@@ -63,7 +63,8 @@ res@mpCenterLonF =180
 res@cnMissingValFillColor="gray"
 res@mpLandFillColor    =   "gray"
 
-res@gsnCenterStringFontHeightF= 0.04
+res@gsnCenterStringFontHeightF= 0.035
+res@gsnLeftStringFontHeightF= 0.03
 res@gsnCenterStringOrthogonalPosF=0.1
 res@tmXBLabelFontHeightF=0.04
 res@tmYLLabelFontHeightF=0.04
@@ -71,28 +72,33 @@ res@tiYAxisFontHeightF=0.04
 res@lbOrientation="horizontal"
 
 res@cnFillPalette        = "GMT_polar"
-res@gsnCenterString="Horizontal adv."
-res@gsnLeftString=""
+res@gsnCenterString="Horizontal advection"
 res@gsnRightString=""
 res@cnMaxLevelValF         =     120
 res@cnMinLevelValF         =     -120
 res@cnLevelSpacingF        =      20
 res@lbLabelBarOn           = False
+res@gsnLeftString="(a)"
 plot(0)  = gsn_csm_contour_map(wks, Middle_First(0,:,:), res )   ; plaace holder
-res@gsnCenterString="Vertical adv."
+res@gsnCenterString="Vertical advection"
+res@gsnLeftString="(b)"
 plot(1)  = gsn_csm_contour_map(wks, Middle_First(1,:,:),res )   ; plaace holder
 res@gsnCenterString=""
 res@lbLabelBarOn           = False
+res@gsnLeftString="(c)"
 plot(2)  = gsn_csm_contour_map(wks, Last_Middle(0,:,:), res )   ; plaace holder
+res@gsnLeftString="(d)"
 plot(3)  = gsn_csm_contour_map(wks, Last_Middle(1,:,:),res )   ; plaace holder
 res@lbLabelBarOn           = True
+res@gsnLeftString="(e)"
 plot(4)  = gsn_csm_contour_map(wks, Last2_Last1(0,:,:), res )   ; plaace holder
+res@gsnLeftString="(f)"
 plot(5)  = gsn_csm_contour_map(wks, Last2_Last1(1,:,:),res )   ; plaace holder
 
 pres                       =   True
 pres@gsnFrame         = False
 pres@gsnMaximize        =       True
-pres@gsnPanelYWhiteSpacePercent = 15
+pres@gsnPanelYWhiteSpacePercent = 10
 pres@gsnPanelXWhiteSpacePercent = 3
 pres@gsnPanelLeft=0.1
 pres@gsnPanelRight=0.9
@@ -114,8 +120,8 @@ gsn_text_ndc(wks,"Positive ",0.05,0.77,txres1)
 gsn_text_ndc(wks,"emissions",0.08,0.77,txres1)
 gsn_text_ndc(wks,"Negative",0.05,0.47,txres1)
 gsn_text_ndc(wks,"emissions",0.08,0.47,txres1)
-gsn_text_ndc(wks,"Zero",0.05,0.15,txres1)
-gsn_text_ndc(wks,"emissions",0.08,0.15,txres1)
+gsn_text_ndc(wks,"Zero",0.05,0.17,txres1)
+gsn_text_ndc(wks,"emissions",0.08,0.17,txres1)
 txres2=True
 txres2@txFontHeightF = 0.014
 gsn_text_ndc(wks,"[mol/m~S~2~N~]",0.91,0.08,txres2)
